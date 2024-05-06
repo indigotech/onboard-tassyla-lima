@@ -1,0 +1,22 @@
+{
+  "name": "onboard-tassyla-lima",
+  "version": "1.0.0",
+  "description": "taqtile onbord project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/indigotech/onboard-tassyla-lima.git"
+  },
+  "author": "tassyla",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/indigotech/onboard-tassyla-lima/issues"
+  },
+  "homepage": "https://github.com/indigotech/onboard-tassyla-lima#readme",
+  "dependencies": {
+    "graphql": "16.8.1"
+  }
+}
