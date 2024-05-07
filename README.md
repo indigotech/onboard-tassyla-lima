@@ -9,4 +9,4 @@ In this project, the main goal is to develop a server application that can perfo
 ## Steps to run and debug
 
 1. `npm install`
-1. `node src/server.ts`
+1. `node start`
