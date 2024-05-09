@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "taqtile onbord project",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.ts"
+    "compile": "tsc",
+    "start": "npm run compile && node ./dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,10 @@
     "@apollo/server": "4.10.4",
     "express": "4.19.2",
     "graphql": "16.8.1",
-    "graphql-http": "1.22.1",
-    "ruru": "2.0.0-beta.11"
+    "graphql-http": "1.22.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.12.11",
+    "typescript": "5.4.5"
   }
 }
