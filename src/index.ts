@@ -1,36 +1,20 @@
-import { ApolloServer } from '@apollo/server';
-import { startStandaloneServer } from '@apollo/server/standalone';
-import 'reflect-metadata';
+import { AppDataSource } from './data-source';
+import { User } from './entity/User';
 
-// A schema is a collection of type definitions (hence "typeDefs")
-// that together define the "shape" of queries that are executed against
-// your data.
-const typeDefs = `
-  type Query {
-    hello: String
-  }
-`;
+AppDataSource.initialize()
+  .then(async () => {
+    console.log('Inserting a new user into the database...');
+    const user = new User();
+    user.firstName = 'Timber';
+    user.lastName = 'Saw';
+    user.age = 25;
+    await AppDataSource.manager.save(user);
+    console.log('Saved a new user with id: ' + user.id);
 
-// Resolvers define how to fetch the types defined in your schema.
-const resolvers = {
-  Query: {
-    hello: () => 'Hello, World!',
-  },
-};
+    console.log('Loading users from the database...');
+    const users = await AppDataSource.manager.find(User);
+    console.log('Loaded users: ', users);
 
-// The ApolloServer constructor requires two parameters: your schema
-// definition and your set of resolvers.
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
-
-// Passing an ApolloServer instance to the `startStandaloneServer` function:
-//  1. creates an Express app
-//  2. installs your ApolloServer instance as middleware
-//  3. prepares your app to handle incoming requests
-const { url } = await startStandaloneServer(server, {
-  listen: { port: 4000 },
-});
-
-console.log(`🚀  Server ready at: ${url}`);
+    console.log('Here you can setup and run express / fastify / any other framework.');
+  })
+  .catch((error) => console.log(error));
