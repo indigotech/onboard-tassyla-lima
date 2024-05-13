@@ -1,13 +1,15 @@
 {
-    "compilerOptions": {
-      "rootDirs": ["src"],
-      "outDir": "dist",
-      "lib": ["es2020"],
-      "target": "es2020",
-      "module": "esnext",
+   "compilerOptions": {
+      "lib": [
+         "es2021"
+      ],
+      "target": "es2021",
+      "module": "es2022",
       "moduleResolution": "node",
-      "esModuleInterop": true,
-      "types": ["node"]
-    }
-  }
-  
+      "allowSyntheticDefaultImports": true,
+      "outDir": "./build",
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "sourceMap": true
+   }
+}

@@ -1,0 +1,22 @@
+services:
+  localdb:
+    image: postgres:16.3-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/dumps:/app-db-dumps
+    environment:
+      - POSTGRES_USER=tassyla
+      - POSTGRES_PASSWORD=J8iKtymbA6EEIbHok6u5lD3DFPY6pC
+      - POSTGRES_DB=local_db
+
+  testdb:
+    image: postgres:16.3-alpine
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./db/dumps:/app-db-dumps
+    environment:
+      - POSTGRES_USER=tassyla
+      - POSTGRES_PASSWORD=vM6L1ysI23PM7WZmjjS7LXP2VTnpoB
+      - POSTGRES_DB=test_db
