@@ -12,7 +12,7 @@ Keeping our code clean is really important too. That's where Eslint and Prettier
 
 ## Steps to run and debug
 
-Once you have Node.js and Docker installed, you can simply execute these
+Once you have Node.js and Docker installed, you can simply execute these:
 
 1. `docker compose up -d`
 1. `npm install`
