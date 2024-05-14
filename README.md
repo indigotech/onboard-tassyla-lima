@@ -16,6 +16,6 @@ Once you have Node.js and Docker installed, you can simply execute these:
 
 1. `docker compose up -d`
 1. `npm install`
-1. `node start`
+1. `npm start`
 
 If you already ran this project once, you can skip the first step listed up here if your containers are already created and running. Also, if you have all dependencies updated you can skip the second step.
