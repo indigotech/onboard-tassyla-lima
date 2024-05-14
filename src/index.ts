@@ -1,20 +1,55 @@
-import { AppDataSource } from './data-source.js';
-import { User } from './entity/User.js';
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer } from '@apollo/server/standalone';
 
-AppDataSource.initialize()
-  .then(async () => {
-    console.log('Inserting a new user into the database...');
-    const user = new User();
-    user.firstName = 'Timber';
-    user.lastName = 'Saw';
-    user.age = 25;
-    await AppDataSource.manager.save(user);
-    console.log('Saved a new user with id: ' + user.id);
+const typeDefs = `
+  type Query {
+    hello: String
+  }
 
-    console.log('Loading users from the database...');
-    const users = await AppDataSource.manager.find(User);
-    console.log('Loaded users: ', users);
+  input UserInput {
+    name: String!
+    email: String!
+    password: String!
+    birthDate: String!
+  }
+  
+  type User {
+    id: ID!
+    name: String!
+    email: String!
+    birthDate: String!
+  }
 
-    console.log('Here you can setup and run express / fastify / any other framework.');
-  })
-  .catch((error) => console.log(error));
+  type Mutation {
+    createUser(data: UserInput!): User
+  }
+`;
+interface IUser {
+  id: string;
+  name: string;
+  email: string;
+  birthDate: string;
+}
+
+const resolvers = {
+  Query: {
+    hello: () => 'Hello, World!',
+  },
+  Mutation: {
+    createUser: (_, { data }): IUser => {
+      const id = 1;
+      return { id, ...data };
+    },
+  },
+};
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+const { url } = await startStandaloneServer(server, {
+  listen: { port: 4000 },
+});
+
+console.log(`🚀  Server ready at: ${url}`);
