@@ -16,6 +16,7 @@ Once you have Node.js and Docker installed, you can simply execute these:
 
 1. `docker compose up -d`
 1. `npm install`
+1. `npm run compile`
 1. `npm start`
 
-If you already ran this project once, you can skip the first step listed up here if your containers are already created and running. Also, if you have all dependencies updated you can skip the second step.
+If you want to run the project again and you already ran it once in your machine, maybe you can skip some of the steps. You can skip the first step if your containers are already created and running. Also, if you didn't update `package.json`, you can skip the second step and if you didn't update `index.ts`, you can skip the third one. 
