@@ -7,6 +7,7 @@ const resolvers = {
   },
   Mutation: {
     createUser: async (_, { data }): Promise<OutUser> => {
+      await validateEmail(data.email);
       validatePassword(data.password);
 
       const userRepository = AppDataSource.getRepository(User);
@@ -39,6 +40,12 @@ const validatePassword = (password: string): void => {
   }
   if (!password.match(/[0-9]/)) {
     throw new Error('Password must contain at least one number.');
+  }
+};
+
+const validateEmail = async (email: string): Promise<void> => {
+  if (await AppDataSource.manager.findOneBy(User, { email: email })) {
+    throw new Error('There is already another user with this email.');
   }
 };
 
