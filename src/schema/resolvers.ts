@@ -11,6 +11,7 @@ const resolvers = {
       validatePassword(data.password);
 
       const userRepository = AppDataSource.getRepository(User);
+
       console.log('Inserting a new user into the database...');
       const user = new User();
       user.name = data.name;
