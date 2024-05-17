@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { expect } from 'chai';
 import { setupServer, serverUrl } from '../src/setup-server';
 
 describe('Sample Test', () => {
@@ -15,6 +16,6 @@ describe('Sample Test', () => {
       `,
     });
 
-    console.log('Response:', response.data);
+    expect(response.data.data.hello).to.be.eq('Hello, World!');
   });
 });
