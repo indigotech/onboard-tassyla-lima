@@ -7,6 +7,8 @@ const resolvers = {
   },
   Mutation: {
     createUser: async (_, { data }): Promise<OutUser> => {
+      const userRepository = AppDataSource.getRepository(User);
+
       console.log('Inserting a new user into the database...');
       const user = new User();
       user.name = data.name;
@@ -14,7 +16,7 @@ const resolvers = {
       user.birthDate = data.birthDate;
       user.password = data.password;
 
-      return await AppDataSource.manager.save(user);
+      return await userRepository.save(user);
     },
   },
 };
