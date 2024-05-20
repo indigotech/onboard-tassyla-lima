@@ -13,13 +13,8 @@ const resolvers = {
       user.email = data.email;
       user.birthDate = data.birthDate;
       user.password = data.password;
-      await AppDataSource.manager.save(user);
-      console.log('Saved a new user with id: ' + user.id);
 
-      const storedUser = await AppDataSource.manager.findOneBy(User, {
-        id: user.id,
-      });
-      return storedUser;
+      return await AppDataSource.manager.save(user);
     },
   },
 };
