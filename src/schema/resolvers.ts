@@ -1,5 +1,6 @@
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
+import bcrypt from 'bcrypt';
 
 const resolvers = {
   Query: {
@@ -10,6 +11,8 @@ const resolvers = {
       await validateEmail(data.email);
       validatePassword(data.password);
 
+      const hashedPassword = await hashPassword(data.password);
+
       const userRepository = AppDataSource.getRepository(User);
 
       console.log('Inserting a new user into the database...');
@@ -17,7 +20,9 @@ const resolvers = {
       user.name = data.name;
       user.email = data.email;
       user.birthDate = data.birthDate;
-      user.password = data.password;
+      user.password = hashedPassword;
+      await AppDataSource.manager.save(user);
+      console.log('Saved a new user with id: ' + user.id);
 
       return await userRepository.save(user);
     },
@@ -47,6 +52,12 @@ const validateEmail = async (email: string): Promise<void> => {
   if (await AppDataSource.manager.findOneBy(User, { email: email })) {
     throw new Error('There is already another user with this email.');
   }
+};
+
+const hashPassword = async (password: string): Promise<string> => {
+  const saltRounds = 10; // Number of salt rounds for bcrypt
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  return hashedPassword;
 };
 
 export default resolvers;
