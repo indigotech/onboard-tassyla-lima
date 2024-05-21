@@ -1,6 +1,6 @@
+import { config } from 'dotenv';
 import { setupServer } from '../setup-server';
 import { setupDatabase } from '../setup-database';
-import { config } from 'dotenv';
 
 config({
   path: process.env.NODE_ENV === 'test' ? 'test.env' : '.env',
@@ -12,3 +12,4 @@ before(async () => {
 });
 
 import './hello-query-test';
+import './create-user-test';
