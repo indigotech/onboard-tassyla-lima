@@ -8,7 +8,7 @@
     "compile": "tsc",
     "start": "node --loader ts-node/esm dist/index.js",
     "typeorm": "typeorm-ts-node-commonjs",
-    "test": "mocha test/**/*.ts"
+    "test": "NODE_ENV=test mocha src/test/index.ts"
   },
   "repository": {
     "type": "git",
@@ -38,6 +38,7 @@
     "@types/node": "20.12.11",
     "axios": "1.6.8",
     "chai": "5.1.1",
+    "dotenv": "16.4.5",
     "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-prettier": "5.1.3",
