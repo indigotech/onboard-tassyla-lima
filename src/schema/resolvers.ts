@@ -25,11 +25,6 @@ const resolvers = {
 
       return await userRepository.save(user);
     },
-    deleteAllUsers: async () => {
-      const userRepository = AppDataSource.getRepository(User);
-      await userRepository.clear();
-      return 'All users deleted successfully.';
-    },
   },
 };
 
@@ -59,7 +54,7 @@ const validateEmail = async (email: string): Promise<void> => {
 };
 
 const hashPassword = async (password: string): Promise<string> => {
-  const saltRounds = 10; // Number of salt rounds for bcrypt
+  const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   return hashedPassword;
 };

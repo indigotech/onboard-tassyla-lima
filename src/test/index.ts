@@ -1,8 +1,8 @@
-import axios from 'axios';
 import { config } from 'dotenv';
 import { setupServer } from '../setup-server';
 import { setupDatabase } from '../setup-database';
-import { serverUrl } from '../setup-server';
+import { AppDataSource } from '../data-source';
+import { User } from '../entity/User';
 
 config({
   path: process.env.NODE_ENV === 'test' ? 'test.env' : '.env',
@@ -14,23 +14,9 @@ before(async () => {
 });
 
 beforeEach(async () => {
-  await deleteAllUsers();
+  const userRepository = AppDataSource.getRepository(User);
+  await userRepository.clear();
 });
-
-async function deleteAllUsers() {
-  try {
-    const response = await axios.post(`${serverUrl}graphql`, {
-      query: `
-        mutation {
-          deleteAllUsers
-        }
-      `,
-    });
-    console.log(response.data.data.deleteAllUsers);
-  } catch (error) {
-    console.error('Error deleting users:', error.response.data);
-  }
-}
 
 import './hello-query-test';
 import './create-user-test';
