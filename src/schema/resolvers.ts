@@ -25,6 +25,11 @@ const resolvers = {
 
       return await userRepository.save(user);
     },
+    deleteAllUsers: async () => {
+      const userRepository = AppDataSource.getRepository(User);
+      await userRepository.clear();
+      return 'All users deleted successfully.';
+    },
   },
 };
 

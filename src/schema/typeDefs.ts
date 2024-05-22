@@ -19,6 +19,7 @@ const typeDefs = `
 
   type Mutation {
     createUser(data: UserInput!): User
+    deleteAllUsers: String
   }
 `;
 
