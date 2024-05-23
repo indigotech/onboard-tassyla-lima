@@ -66,7 +66,7 @@ async function checksInputAndStoredUser(inputData: InputData) {
 }
 
 describe('createUser mutation', () => {
-  before(async () => {
+  beforeEach(async () => {
     const userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
   });
@@ -85,14 +85,29 @@ describe('createUser mutation', () => {
   });
 
   it('should return an error when creating a user with the same email', async () => {
-    const inputData = {
+    const inputData1: InputData = {
+      name: 'John Phill',
+      email: 'john@example.com',
+      password: 'password123',
+      birthDate: '1990-01-01',
+    };
+
+    const inputData2 = {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password456',
       birthDate: '1985-05-10',
     };
 
-    const response = await postQuery(inputData);
+    const userRepository = AppDataSource.getRepository(User);
+    const user = new User();
+    user.name = inputData1.name;
+    user.email = inputData1.email;
+    user.birthDate = inputData1.birthDate;
+    user.password = await bcrypt.hash(inputData1.password, 10);
+    await userRepository.save(user);
+
+    const response = await postQuery(inputData2);
 
     expect(response.data.errors[0].message).to.equal('There is already another user with this email.');
   });
@@ -137,15 +152,30 @@ describe('createUser mutation', () => {
   });
 
   it('should create another new user', async () => {
-    const inputData = {
+    const inputData1: InputData = {
+      name: 'John Phill',
+      email: 'john@example.com',
+      password: 'password123',
+      birthDate: '1990-01-01',
+    };
+
+    const inputData2 = {
       name: 'Tassyla Lima',
       email: 'Tassyla@example.com',
       password: 'password987',
       birthDate: '2003-12-11',
     };
 
-    const response = await postQuery(inputData);
-    await checksInputAndReturnedUser(inputData, response);
-    await checksInputAndStoredUser(inputData);
+    const userRepository = AppDataSource.getRepository(User);
+    const user = new User();
+    user.name = inputData1.name;
+    user.email = inputData1.email;
+    user.birthDate = inputData1.birthDate;
+    user.password = await bcrypt.hash(inputData1.password, 10);
+    await userRepository.save(user);
+
+    const response = await postQuery(inputData2);
+    await checksInputAndReturnedUser(inputData2, response);
+    await checksInputAndStoredUser(inputData2);
   });
 });
