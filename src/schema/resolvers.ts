@@ -15,13 +15,11 @@ const resolvers = {
 
       const userRepository = AppDataSource.getRepository(User);
 
-      console.log('Inserting a new user into the database...');
       const user = new User();
       user.name = data.name;
       user.email = data.email;
       user.birthDate = data.birthDate;
       user.password = hashedPassword;
-      console.log('Saved a new user with id: ' + user.id);
 
       return await userRepository.save(user);
     },
