@@ -1,5 +1,6 @@
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
+import { CustomError } from './customError.js';
 import bcrypt from 'bcrypt';
 
 const resolvers = {
@@ -35,19 +36,19 @@ interface OutUser {
 
 const validatePassword = (password: string): void => {
   if (password.length < 6) {
-    throw new Error('Password must be at least 6 characters long.');
+    throw new CustomError(400, 'Invalid password', 'Password must be at least 6 characters long.');
   }
-  if (!password.match(/[a-zA-Z]/)) {
-    throw new Error('Password must contain at least one letter.');
+  if (!password.match(/[a-zA-ZS]/)) {
+    throw new CustomError(400, 'Invalid password', 'Password must contain at least one letter.');
   }
   if (!password.match(/[0-9]/)) {
-    throw new Error('Password must contain at least one number.');
+    throw new CustomError(400, 'Invalid password', 'Password must contain at least one number.');
   }
 };
 
 const validateEmail = async (email: string): Promise<void> => {
   if (await AppDataSource.manager.findOneBy(User, { email: email })) {
-    throw new Error('There is already another user with this email.');
+    throw new CustomError(400, 'Invalid email', 'There is already another user with this email.');
   }
 };
 

@@ -119,8 +119,7 @@ describe('createUser mutation', () => {
     };
 
     const response = await postQuery(inputData);
-
-    expect(response.data.errors[0].message).to.equal('Password must be at least 6 characters long.');
+    expect(response.data.errors[0].additionalInfo).to.equal('Password must be at least 6 characters long.');
   });
 
   it('should return an error when password does not contain at least one letter', async () => {
@@ -132,8 +131,7 @@ describe('createUser mutation', () => {
     };
 
     const response = await postQuery(inputData);
-
-    expect(response.data.errors[0].message).to.equal('Password must contain at least one letter.');
+    expect(response.data.errors[0].additionalInfo).to.equal('Password must contain at least one letter.');
   });
 
   it('should return an error when password does not contain at least one number', async () => {
@@ -145,8 +143,9 @@ describe('createUser mutation', () => {
     };
 
     const response = await postQuery(inputData);
+    console.log(response.data.errors);
 
-    expect(response.data.errors[0].message).to.equal('Password must contain at least one number.');
+    expect(response.data.errors[0].additionalInfo).to.equal('Password must contain at least one number.');
   });
 
   it('should create another new user', async () => {
