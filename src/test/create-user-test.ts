@@ -143,7 +143,6 @@ describe('createUser mutation', () => {
     };
 
     const response = await postQuery(inputData);
-    console.log(response.data.errors);
 
     expect(response.data.errors[0].additionalInfo).to.equal('Password must contain at least one number.');
   });
