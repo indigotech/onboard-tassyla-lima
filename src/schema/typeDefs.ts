@@ -21,7 +21,7 @@ const typeDefs = `
   }
 
   type OutUser {
-    id: Int!
+    id: ID!
     name: String!
     email: String!
     birthDate: String!
