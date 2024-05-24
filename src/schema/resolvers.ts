@@ -15,14 +15,11 @@ const resolvers = {
 
       const userRepository = AppDataSource.getRepository(User);
 
-      console.log('Inserting a new user into the database...');
       const user = new User();
       user.name = data.name;
       user.email = data.email;
       user.birthDate = data.birthDate;
       user.password = hashedPassword;
-      await AppDataSource.manager.save(user);
-      console.log('Saved a new user with id: ' + user.id);
 
       return await userRepository.save(user);
     },
@@ -55,7 +52,7 @@ const validateEmail = async (email: string): Promise<void> => {
 };
 
 const hashPassword = async (password: string): Promise<string> => {
-  const saltRounds = 10; // Number of salt rounds for bcrypt
+  const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   return hashedPassword;
 };
