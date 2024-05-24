@@ -113,7 +113,7 @@ describe('createUser mutation', () => {
 
     const response = await postQuery(inputData2);
 
-    expect(response.data.errors[0]).to.deep.equal(expectedError);
+    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
   });
 
   it('should return an error when password is less than 6 characters long', async () => {
@@ -132,7 +132,7 @@ describe('createUser mutation', () => {
 
     const response = await postQuery(inputData);
 
-    expect(response.data.errors[0]).to.deep.equal(expectedError);
+    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
   });
 
   it('should return an error when password does not contain at least one letter', async () => {
@@ -150,7 +150,7 @@ describe('createUser mutation', () => {
     };
 
     const response = await postQuery(inputData);
-    expect(response.data.errors[0]).to.deep.equal(expectedError);
+    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
   });
 
   it('should return an error when password does not contain at least one number', async () => {
@@ -169,7 +169,7 @@ describe('createUser mutation', () => {
 
     const response = await postQuery(inputData);
 
-    expect(response.data.errors[0]).to.deep.equal(expectedError);
+    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
   });
 
   it('should create another new user', async () => {
