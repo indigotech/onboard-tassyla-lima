@@ -98,6 +98,12 @@ describe('createUser mutation', () => {
       birthDate: '1985-05-10',
     };
 
+    const expectedError = {
+      code: 400,
+      message: 'Invalid email',
+      additionalInfo: 'There is already another user with this email.',
+    };
+
     const userRepository = AppDataSource.getRepository(User);
 
     await userRepository.save({
@@ -107,7 +113,7 @@ describe('createUser mutation', () => {
 
     const response = await postQuery(inputData2);
 
-    expect(response.data.errors[0].message).to.equal('There is already another user with this email.');
+    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
   });
 
   it('should return an error when password is less than 6 characters long', async () => {
@@ -118,9 +124,15 @@ describe('createUser mutation', () => {
       birthDate: '1995-07-11',
     };
 
+    const expectedError = {
+      code: 400,
+      message: 'Invalid password',
+      additionalInfo: 'Password must be at least 6 characters long.',
+    };
+
     const response = await postQuery(inputData);
 
-    expect(response.data.errors[0].message).to.equal('Password must be at least 6 characters long.');
+    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
   });
 
   it('should return an error when password does not contain at least one letter', async () => {
@@ -131,9 +143,14 @@ describe('createUser mutation', () => {
       birthDate: '1996-12-20',
     };
 
-    const response = await postQuery(inputData);
+    const expectedError = {
+      code: 400,
+      message: 'Invalid password',
+      additionalInfo: 'Password must contain at least one letter.',
+    };
 
-    expect(response.data.errors[0].message).to.equal('Password must contain at least one letter.');
+    const response = await postQuery(inputData);
+    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
   });
 
   it('should return an error when password does not contain at least one number', async () => {
@@ -144,9 +161,15 @@ describe('createUser mutation', () => {
       birthDate: '1993-03-25',
     };
 
+    const expectedError = {
+      code: 400,
+      message: 'Invalid password',
+      additionalInfo: 'Password must contain at least one number.',
+    };
+
     const response = await postQuery(inputData);
 
-    expect(response.data.errors[0].message).to.equal('Password must contain at least one number.');
+    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
   });
 
   it('should create another new user', async () => {
