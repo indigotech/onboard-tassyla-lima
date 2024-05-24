@@ -48,11 +48,7 @@ async function checksInputAndStoredUser(inputData: InputData) {
     email: inputData.email,
   });
 
-  const storedUserWithoutIdAndPassword = {
-    name: storedUser.name,
-    email: storedUser.email,
-    birthDate: storedUser.birthDate,
-  };
+  const { id, password, ...userFields } = storedUser;
 
   const inputDataWithoutPassword = {
     name: inputData.name,
@@ -60,9 +56,11 @@ async function checksInputAndStoredUser(inputData: InputData) {
     birthDate: inputData.birthDate,
   };
 
-  expect(storedUserWithoutIdAndPassword).to.deep.equal(inputDataWithoutPassword);
-  expect(Number(storedUser.id)).to.be.above(0);
-  expect(await bcrypt.compare(inputData.password, storedUser.password)).to.be.true;
+  expect(userFields).to.deep.equal(inputDataWithoutPassword);
+  expect(Number(id)).to.be.above(0);
+  expect(await bcrypt.compare(inputData.password, password)).to.be.true;
+
+  return id;
 }
 
 describe('createUser mutation', () => {
@@ -81,7 +79,8 @@ describe('createUser mutation', () => {
 
     const response = await postQuery(inputData);
     await checksInputAndReturnedUser(inputData, response);
-    await checksInputAndStoredUser(inputData);
+    const storedId = await checksInputAndStoredUser(inputData);
+    expect(response.data.data.createUser.id).to.equal(String(storedId));
   });
 
   it('should return an error when creating a user with the same email', async () => {
@@ -92,7 +91,7 @@ describe('createUser mutation', () => {
       birthDate: '1990-01-01',
     };
 
-    const inputData2 = {
+    const inputData2: InputData = {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password456',
@@ -100,12 +99,11 @@ describe('createUser mutation', () => {
     };
 
     const userRepository = AppDataSource.getRepository(User);
-    const user = new User();
-    user.name = inputData1.name;
-    user.email = inputData1.email;
-    user.birthDate = inputData1.birthDate;
-    user.password = await bcrypt.hash(inputData1.password, 10);
-    await userRepository.save(user);
+
+    await userRepository.save({
+      ...inputData1,
+      password: await bcrypt.hash(inputData1.password, 10),
+    });
 
     const response = await postQuery(inputData2);
 
