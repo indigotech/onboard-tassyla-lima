@@ -11,7 +11,7 @@ export class CustomError extends Error {
   }
 }
 
-export function errorFormatter(formattedError: Error, error: unknown) {
+export function errorFormatter(formattedError: CustomError, error: Error) {
   const thrownError = unwrapResolverError(error);
 
   if (thrownError instanceof CustomError) {
@@ -21,6 +21,9 @@ export function errorFormatter(formattedError: Error, error: unknown) {
       additionalInfo: thrownError.additionalInfo,
     };
   } else {
-    return formattedError;
+    return {
+      message: 'Unknown Error',
+      code: 500,
+    };
   }
 }
