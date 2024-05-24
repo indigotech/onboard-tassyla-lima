@@ -3,22 +3,33 @@ const typeDefs = `
     hello: String
   }
 
-  input UserInput {
+  type Mutation {
+    createUser(data: CreateUserInput!): OutUser!
+    login(data: LoginInput!): LoginResponse!
+  }
+
+  input CreateUserInput {
     name: String!
     email: String!
     password: String!
     birthDate: String!
   }
-  
-  type User {
-    id: ID!
+
+  input LoginInput {
+    email: String!
+    password: String!
+  }
+
+  type OutUser {
+    id: Int!
     name: String!
     email: String!
     birthDate: String!
   }
 
-  type Mutation {
-    createUser(data: UserInput!): User
+  type LoginResponse {
+    user: OutUser!
+    token: String!
   }
 `;
 

@@ -24,6 +24,14 @@ const resolvers = {
 
       return await userRepository.save(user);
     },
+    login: async (_, { data }): Promise<LoginResponse> => {
+      const user = await validateLogin(data.email, data.password);
+
+      return {
+        user: user,
+        token: '',
+      };
+    },
   },
 };
 
@@ -32,6 +40,16 @@ interface OutUser {
   name: string;
   email: string;
   birthDate: string;
+}
+
+interface LoginResponse {
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    birthDate: string;
+  };
+  token: string;
 }
 
 const validatePassword = (password: string): void => {
@@ -56,6 +74,19 @@ const hashPassword = async (password: string): Promise<string> => {
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   return hashedPassword;
+};
+
+const validateLogin = async (email: string, password: string): Promise<OutUser> => {
+  const user = await AppDataSource.manager.findOneBy(User, { email: email });
+  if (!user) {
+    throw new CustomError(400, 'Invalid email', 'There is not an user with this email.');
+  }
+
+  const passwordIsCorrect = await bcrypt.compare(password, user.password);
+  if (!passwordIsCorrect) {
+    throw new CustomError(400, 'Invalid password', 'The password is incorrect.');
+  }
+  return user;
 };
 
 export default resolvers;
