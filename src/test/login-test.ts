@@ -71,12 +71,10 @@ describe('login mutation', () => {
     };
 
     const userRepository = AppDataSource.getRepository(User);
-    const user = new User();
-    user.name = inputUser.name;
-    user.email = inputUser.email;
-    user.birthDate = inputUser.birthDate;
-    user.password = await bcrypt.hash(inputUser.password, 10);
-    await userRepository.save(user);
+    await userRepository.save({
+      ...inputUser,
+      password: await bcrypt.hash(inputUser.password, 10),
+    });
 
     const response = await postLogin(inpuLogin);
 
@@ -111,16 +109,14 @@ describe('login mutation', () => {
     };
 
     const userRepository = AppDataSource.getRepository(User);
-    const user = new User();
-    user.name = inputUser.name;
-    user.email = inputUser.email;
-    user.birthDate = inputUser.birthDate;
-    user.password = await bcrypt.hash(inputUser.password, 10);
-    await userRepository.save(user);
+    await userRepository.save({
+      ...inputUser,
+      password: await bcrypt.hash(inputUser.password, 10),
+    });
 
     const response = await postLogin(inpuLogin);
 
-    expect(response.data.errors[0]).to.deep.equal(expectedError);
+    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
   });
 
   it('should return an error when logging in with the wrong password', async () => {
@@ -143,15 +139,13 @@ describe('login mutation', () => {
     };
 
     const userRepository = AppDataSource.getRepository(User);
-    const user = new User();
-    user.name = inputUser.name;
-    user.email = inputUser.email;
-    user.birthDate = inputUser.birthDate;
-    user.password = await bcrypt.hash(inputUser.password, 10);
-    await userRepository.save(user);
+    await userRepository.save({
+      ...inputUser,
+      password: await bcrypt.hash(inputUser.password, 10),
+    });
 
     const response = await postLogin(inpuLogin);
 
-    expect(response.data.errors[0]).to.deep.equal(expectedError);
+    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
   });
 });

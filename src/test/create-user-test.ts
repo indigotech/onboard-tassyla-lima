@@ -188,12 +188,10 @@ describe('createUser mutation', () => {
     };
 
     const userRepository = AppDataSource.getRepository(User);
-    const user = new User();
-    user.name = inputData1.name;
-    user.email = inputData1.email;
-    user.birthDate = inputData1.birthDate;
-    user.password = await bcrypt.hash(inputData1.password, 10);
-    await userRepository.save(user);
+    await userRepository.save({
+      ...inputData1,
+      password: await bcrypt.hash(inputData1.password, 10),
+    });
 
     const response = await createUser(inputData2);
     await checksInputAndReturnedUser(inputData2, response);
