@@ -4,7 +4,7 @@ const typeDefs = `
   }
 
   type Mutation {
-    createUser(data: CreateUserInput!): OutUser!
+    createUser(data: CreateUserInput!): User!
     login(data: LoginInput!): LoginResponse!
   }
 
@@ -20,7 +20,7 @@ const typeDefs = `
     password: String!
   }
 
-  type OutUser {
+  type User {
     id: ID!
     name: String!
     email: String!
@@ -28,7 +28,7 @@ const typeDefs = `
   }
 
   type LoginResponse {
-    user: OutUser!
+    user: User!
     token: String!
   }
 `;
