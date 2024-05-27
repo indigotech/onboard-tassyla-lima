@@ -13,7 +13,7 @@ interface InputData {
 }
 
 async function createUser(inputData: InputData): Promise<AxiosResponse> {
-  const response = await axios.post(`${serverUrl}graphql`, {
+  return axios.post(`${serverUrl}graphql`, {
     query: `
       mutation CreateUser($data: CreateUserInput!) {
       createUser(data: $data) {
@@ -28,8 +28,6 @@ async function createUser(inputData: InputData): Promise<AxiosResponse> {
       data: inputData,
     },
   });
-
-  return response;
 }
 
 async function checksInputAndReturnedUser(inputData: InputData, response: AxiosResponse) {
@@ -108,12 +106,12 @@ describe('createUser mutation', () => {
 
     await userRepository.save({
       ...inputData1,
-      password: await bcrypt.hash(inputData1.password, 10),
+      password: await bcrypt.hash(inputData1.password, 1),
     });
 
     const response = await createUser(inputData2);
 
-    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should return an error when password is less than 6 characters long', async () => {
@@ -132,7 +130,7 @@ describe('createUser mutation', () => {
 
     const response = await createUser(inputData);
 
-    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should return an error when password does not contain at least one letter', async () => {
@@ -150,7 +148,7 @@ describe('createUser mutation', () => {
     };
 
     const response = await createUser(inputData);
-    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should return an error when password does not contain at least one number', async () => {
@@ -169,7 +167,7 @@ describe('createUser mutation', () => {
 
     const response = await createUser(inputData);
 
-    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should create another new user', async () => {
@@ -190,7 +188,7 @@ describe('createUser mutation', () => {
     const userRepository = AppDataSource.getRepository(User);
     await userRepository.save({
       ...inputData1,
-      password: await bcrypt.hash(inputData1.password, 10),
+      password: await bcrypt.hash(inputData1.password, 1),
     });
 
     const response = await createUser(inputData2);

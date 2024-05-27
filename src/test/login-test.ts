@@ -116,7 +116,7 @@ describe('login mutation', () => {
 
     const response = await postLogin(inpuLogin);
 
-    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should return an error when logging in with the wrong password', async () => {
@@ -146,6 +146,6 @@ describe('login mutation', () => {
 
     const response = await postLogin(inpuLogin);
 
-    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 });
