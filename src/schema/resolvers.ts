@@ -2,6 +2,10 @@ import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { CustomError } from './customError.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+const shortLoginExpiration = 720;
+const longLoginExpiration = 1440 * 7;
 
 const resolvers = {
   Query: {
@@ -27,9 +31,11 @@ const resolvers = {
     login: async (_, { data }): Promise<LoginResponse> => {
       const user = await validateLogin(data.email, data.password);
 
+      const expiration = data.rememberMe ? longLoginExpiration : shortLoginExpiration;
+
       return {
         user: user,
-        token: '',
+        token: jwt.sign({ username: data.email }, 'supersecret', { expiresIn: expiration }),
       };
     },
   },
