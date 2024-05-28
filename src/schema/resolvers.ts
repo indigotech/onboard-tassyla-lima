@@ -12,7 +12,9 @@ const resolvers = {
     hello: () => 'Hello, World!',
   },
   Mutation: {
-    createUser: async (_, { data }): Promise<OutUser> => {
+    createUser: async (_, { data }, contexct): Promise<OutUser> => {
+      validateToken(contexct.token);
+
       await validateEmail(data.email);
       validatePassword(data.password);
 
@@ -32,10 +34,11 @@ const resolvers = {
       const user = await validateLogin(data.email, data.password);
 
       const expiration = data.rememberMe ? longLoginExpiration : shortLoginExpiration;
+      const token = jwt.sign({ id: user.id, email: user.email }, 'supersecret', { expiresIn: expiration });
 
       return {
         user: user,
-        token: jwt.sign({ username: data.email }, 'supersecret', { expiresIn: expiration }),
+        token: token,
       };
     },
   },
@@ -93,6 +96,17 @@ const validateLogin = async (email: string, password: string): Promise<OutUser> 
     throw new CustomError(400, 'Invalid password', 'The password is incorrect.');
   }
   return user;
+};
+
+const validateToken = async (token: string): Promise<void> => {
+  console.log(token);
+
+  //const decoded = jwt.verify(contexct.token, 'your_secret_key');
+  //console.log(decoded);
+  //jwt.verify(token, 'supersecret', function(err, decoded){
+  //  if(err){
+  //    throw new CustomError(400, 'Unauthorised access', 'You have to be logged in to access this resource.');
+  //  }
 };
 
 export default resolvers;
