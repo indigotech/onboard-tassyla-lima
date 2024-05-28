@@ -34,7 +34,7 @@ const resolvers = {
       const user = await validateLogin(data.email, data.password);
 
       const expiration = data.rememberMe ? longLoginExpiration : shortLoginExpiration;
-      const token = jwt.sign({ id: user.id, email: user.email }, 'supersecret', { expiresIn: expiration });
+      const token = jwt.sign({ id: user.id, email: user.email }, process.env.TOKEN_SECRET, { expiresIn: expiration });
 
       return {
         user: user,
@@ -103,7 +103,7 @@ const validateToken = async (token: string): Promise<void> => {
 
   //const decoded = jwt.verify(contexct.token, 'your_secret_key');
   //console.log(decoded);
-  //jwt.verify(token, 'supersecret', function(err, decoded){
+  //jwt.verify(token, process.env.TOKEN_SECRET, function(err, decoded){
   //  if(err){
   //    throw new CustomError(400, 'Unauthorised access', 'You have to be logged in to access this resource.');
   //  }
