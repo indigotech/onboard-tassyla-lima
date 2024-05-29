@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
+import { Repository } from 'typeorm';
 
 interface InputData {
   name: string;
@@ -12,10 +13,10 @@ interface InputData {
   password: string;
 }
 
-async function postQuery(inputData: InputData): Promise<AxiosResponse> {
-  const response = await axios.post(`${serverUrl}graphql`, {
+async function createUser(inputData: InputData): Promise<AxiosResponse> {
+  return axios.post(`${serverUrl}graphql`, {
     query: `
-      mutation CreateUser($data: UserInput!) {
+      mutation CreateUser($data: CreateUserInput!) {
       createUser(data: $data) {
           id
           name
@@ -28,8 +29,6 @@ async function postQuery(inputData: InputData): Promise<AxiosResponse> {
       data: inputData,
     },
   });
-
-  return response;
 }
 
 async function checksInputAndReturnedUser(inputData: InputData, response: AxiosResponse) {
@@ -64,8 +63,10 @@ async function checksInputAndStoredUser(inputData: InputData) {
 }
 
 describe('createUser mutation', () => {
+  let userRepository: Repository<User>;
+
   beforeEach(async () => {
-    const userRepository = AppDataSource.getRepository(User);
+    userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
   });
 
@@ -77,7 +78,7 @@ describe('createUser mutation', () => {
       birthDate: '1990-01-01',
     };
 
-    const response = await postQuery(inputData);
+    const response = await createUser(inputData);
     await checksInputAndReturnedUser(inputData, response);
     const storedId = await checksInputAndStoredUser(inputData);
     expect(response.data.data.createUser.id).to.equal(String(storedId));
@@ -104,16 +105,14 @@ describe('createUser mutation', () => {
       additionalInfo: 'There is already another user with this email.',
     };
 
-    const userRepository = AppDataSource.getRepository(User);
-
     await userRepository.save({
       ...inputData1,
-      password: await bcrypt.hash(inputData1.password, 10),
+      password: await bcrypt.hash(inputData1.password, 1),
     });
 
-    const response = await postQuery(inputData2);
+    const response = await createUser(inputData2);
 
-    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should return an error when password is less than 6 characters long', async () => {
@@ -130,9 +129,9 @@ describe('createUser mutation', () => {
       additionalInfo: 'Password must be at least 6 characters long.',
     };
 
-    const response = await postQuery(inputData);
+    const response = await createUser(inputData);
 
-    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should return an error when password does not contain at least one letter', async () => {
@@ -149,8 +148,8 @@ describe('createUser mutation', () => {
       additionalInfo: 'Password must contain at least one letter.',
     };
 
-    const response = await postQuery(inputData);
-    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
+    const response = await createUser(inputData);
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should return an error when password does not contain at least one number', async () => {
@@ -167,9 +166,9 @@ describe('createUser mutation', () => {
       additionalInfo: 'Password must contain at least one number.',
     };
 
-    const response = await postQuery(inputData);
+    const response = await createUser(inputData);
 
-    expect(response.data).to.deep.equal({ data: { createUser: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should create another new user', async () => {
@@ -187,15 +186,12 @@ describe('createUser mutation', () => {
       birthDate: '2003-12-11',
     };
 
-    const userRepository = AppDataSource.getRepository(User);
-    const user = new User();
-    user.name = inputData1.name;
-    user.email = inputData1.email;
-    user.birthDate = inputData1.birthDate;
-    user.password = await bcrypt.hash(inputData1.password, 10);
-    await userRepository.save(user);
+    await userRepository.save({
+      ...inputData1,
+      password: await bcrypt.hash(inputData1.password, 1),
+    });
 
-    const response = await postQuery(inputData2);
+    const response = await createUser(inputData2);
     await checksInputAndReturnedUser(inputData2, response);
     await checksInputAndStoredUser(inputData2);
   });
