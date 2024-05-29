@@ -5,6 +5,7 @@ import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
+import jwt from 'jsonwebtoken';
 
 interface CreateUserInputData {
   name: string;
@@ -62,6 +63,12 @@ describe('login mutation', () => {
       password: inputUser.password,
     };
 
+    const inputUserWithoutPassword = {
+      name: inputUser.name,
+      email: inputUser.email,
+      birthDate: inputUser.birthDate,
+    };
+
     await userRepository.save({
       ...inputUser,
       password: await bcrypt.hash(inputUser.password, 10),
@@ -69,30 +76,15 @@ describe('login mutation', () => {
 
     const response = await postLogin(inpuLogin);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    //const { id, ...login } = response.data.data.login.user;
-    //const responseWithoutId = {
-    //  user: login,
-    //  token: response.data.data.login.token,
-    //};
-
-    const storedUser = await userRepository.findOneBy({
-      email: inputUser.email,
-    });
-
-    const expectedResponseWithoutPassword = {
-      user: {
-        id: String(storedUser.id),
-        name: inputUser.name,
-        email: inputUser.email,
-        birthDate: inputUser.birthDate,
-      },
-      token: '',
+    const { id, ...login } = response.data.data.login.user;
+    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as {
+      id: number;
+      iat: number;
+      exp: number;
     };
 
-    expect(response.data).to.be.deep.eq({
-      data: { login: expectedResponseWithoutPassword },
-    });
+    expect(login).to.deep.equal(inputUserWithoutPassword);
+    expect(Number(id)).to.deep.equal(decodedToken.id);
   });
 
   it('should return an error when logging in with an email that does not exist', async () => {

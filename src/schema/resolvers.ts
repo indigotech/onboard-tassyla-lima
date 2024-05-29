@@ -4,17 +4,12 @@ import { CustomError } from './customError.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-const shortLoginExpiration = 720;
-const longLoginExpiration = 1440 * 7;
-
 const resolvers = {
   Query: {
     hello: () => 'Hello, World!',
   },
   Mutation: {
-    createUser: async (_, { data }, contexct): Promise<OutUser> => {
-      validateToken(contexct.token);
-
+    createUser: async (_, { data }): Promise<OutUser> => {
       await validateEmail(data.email);
       validatePassword(data.password);
 
@@ -33,8 +28,8 @@ const resolvers = {
     login: async (_, { data }): Promise<LoginResponse> => {
       const user = await validateLogin(data.email, data.password);
 
-      const expiration = data.rememberMe ? longLoginExpiration : shortLoginExpiration;
-      const token = jwt.sign({ id: user.id, email: user.email }, process.env.TOKEN_SECRET, { expiresIn: expiration });
+      const expiration = data.rememberMe ? '7d' : '8h';
+      const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET, { expiresIn: expiration });
 
       return {
         user: user,
@@ -96,17 +91,6 @@ const validateLogin = async (email: string, password: string): Promise<OutUser> 
     throw new CustomError(400, 'Invalid password', 'The password is incorrect.');
   }
   return user;
-};
-
-const validateToken = async (token: string): Promise<void> => {
-  console.log(token);
-
-  //const decoded = jwt.verify(contexct.token, 'your_secret_key');
-  //console.log(decoded);
-  //jwt.verify(token, process.env.TOKEN_SECRET, function(err, decoded){
-  //  if(err){
-  //    throw new CustomError(400, 'Unauthorised access', 'You have to be logged in to access this resource.');
-  //  }
 };
 
 export default resolvers;
