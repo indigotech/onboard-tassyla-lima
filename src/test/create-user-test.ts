@@ -66,6 +66,7 @@ describe('createUser mutation', () => {
   let userRepository: Repository<User>;
 
   beforeEach(async () => {
+    userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
   });
 
