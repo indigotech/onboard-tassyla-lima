@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
+import { Repository } from 'typeorm';
 
 interface CreateUserInputData {
   name: string;
@@ -41,8 +42,10 @@ async function postLogin(loginInputData: LoginInputData): Promise<AxiosResponse>
 }
 
 describe('login mutation', () => {
+  let userRepository: Repository<User>;
+
   beforeEach(async () => {
-    const userRepository = AppDataSource.getRepository(User);
+    userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
   });
 
@@ -70,7 +73,6 @@ describe('login mutation', () => {
       token: '',
     };
 
-    const userRepository = AppDataSource.getRepository(User);
     await userRepository.save({
       ...inputUser,
       password: await bcrypt.hash(inputUser.password, 10),
@@ -108,7 +110,6 @@ describe('login mutation', () => {
       additionalInfo: 'There is not an user with this email.',
     };
 
-    const userRepository = AppDataSource.getRepository(User);
     await userRepository.save({
       ...inputUser,
       password: await bcrypt.hash(inputUser.password, 10),
@@ -138,7 +139,6 @@ describe('login mutation', () => {
       additionalInfo: 'The password is incorrect.',
     };
 
-    const userRepository = AppDataSource.getRepository(User);
     await userRepository.save({
       ...inputUser,
       password: await bcrypt.hash(inputUser.password, 10),

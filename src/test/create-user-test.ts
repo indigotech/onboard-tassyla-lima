@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
+import { Repository } from 'typeorm';
 
 interface InputData {
   name: string;
@@ -62,8 +63,9 @@ async function checksInputAndStoredUser(inputData: InputData) {
 }
 
 describe('createUser mutation', () => {
+  let userRepository: Repository<User>;
+
   beforeEach(async () => {
-    const userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
   });
 
@@ -101,8 +103,6 @@ describe('createUser mutation', () => {
       message: 'Invalid email',
       additionalInfo: 'There is already another user with this email.',
     };
-
-    const userRepository = AppDataSource.getRepository(User);
 
     await userRepository.save({
       ...inputData1,
@@ -185,7 +185,6 @@ describe('createUser mutation', () => {
       birthDate: '2003-12-11',
     };
 
-    const userRepository = AppDataSource.getRepository(User);
     await userRepository.save({
       ...inputData1,
       password: await bcrypt.hash(inputData1.password, 1),
