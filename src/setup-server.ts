@@ -4,6 +4,8 @@ import { errorFormatter } from './schema/customError.js';
 import typeDefs from './schema/typeDefs.js';
 import resolvers from './schema/resolvers.js';
 import jwt from 'jsonwebtoken';
+import { AppDataSource } from './data-source.js';
+import { User } from './entity/User.js';
 
 export let serverUrl: string;
 
@@ -25,7 +27,10 @@ export async function setupServer() {
           exp: number;
         };
 
-        if (new Date().getTime() < decodedToken.exp * 1000) {
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOneBy({ id: decodedToken.id });
+
+        if (user && new Date().getTime() < decodedToken.exp * 1000) {
           return { userId: decodedToken.id };
         }
       }
