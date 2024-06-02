@@ -6,6 +6,7 @@ import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
 import jwt from 'jsonwebtoken';
+import { addDays, addHours } from 'date-fns';
 
 interface CreateUserInputData {
   name: string;
@@ -17,6 +18,7 @@ interface CreateUserInputData {
 interface LoginInputData {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 async function postLogin(loginInputData: LoginInputData): Promise<AxiosResponse> {
@@ -143,5 +145,101 @@ describe('login mutation', () => {
     const response = await postLogin(inpuLogin);
 
     expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
+  });
+  it('should return a token with correct expiration for rememberMe option set as true', async () => {
+    const inputUser: CreateUserInputData = {
+      name: 'Daniel Ueno',
+      email: 'daniel@example.com',
+      password: 'password123',
+      birthDate: '1995-01-01',
+    };
+
+    const inputLogin: LoginInputData = {
+      email: inputUser.email,
+      password: inputUser.password,
+      rememberMe: true,
+    };
+
+    await userRepository.save({
+      ...inputUser,
+      password: await bcrypt.hash(inputUser.password, 10),
+    });
+
+    const response = await postLogin(inputLogin);
+
+    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as {
+      id: number;
+      iat: number;
+      exp: number;
+    };
+
+    const expectedExpiration = addDays(new Date(), 7).getTime();
+    const tokenExpiration = decodedToken.exp * 1000;
+
+    expect(tokenExpiration).to.be.closeTo(expectedExpiration, 1000);
+  });
+
+  it('should return a token with correct expiration for rememberMe option set as false', async () => {
+    const inputUser: CreateUserInputData = {
+      name: 'Tassyla Lima',
+      email: 'tassyla@example.com',
+      password: 'password123',
+      birthDate: '2003-12-11',
+    };
+
+    const inputLogin: LoginInputData = {
+      email: inputUser.email,
+      password: inputUser.password,
+      rememberMe: false,
+    };
+
+    await userRepository.save({
+      ...inputUser,
+      password: await bcrypt.hash(inputUser.password, 10),
+    });
+
+    const response = await postLogin(inputLogin);
+
+    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as {
+      id: number;
+      iat: number;
+      exp: number;
+    };
+
+    const expectedExpiration = addHours(new Date(), 8).getTime();
+    const tokenExpiration = decodedToken.exp * 1000;
+
+    expect(tokenExpiration).to.be.closeTo(expectedExpiration, 1000);
+  });
+  it('should return a token with correct expiration for no rememberMe option set', async () => {
+    const inputUser: CreateUserInputData = {
+      name: 'Tassyla Lima',
+      email: 'tassyla@example.com',
+      password: 'password123',
+      birthDate: '2003-12-11',
+    };
+
+    const inputLogin: LoginInputData = {
+      email: inputUser.email,
+      password: inputUser.password,
+    };
+
+    await userRepository.save({
+      ...inputUser,
+      password: await bcrypt.hash(inputUser.password, 10),
+    });
+
+    const response = await postLogin(inputLogin);
+
+    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as {
+      id: number;
+      iat: number;
+      exp: number;
+    };
+
+    const expectedExpiration = addHours(new Date(), 8).getTime();
+    const tokenExpiration = decodedToken.exp * 1000;
+
+    expect(tokenExpiration).to.be.closeTo(expectedExpiration, 1000);
   });
 });
