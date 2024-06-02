@@ -1,11 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { expect } from 'chai';
 import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
-import jwt from 'jsonwebtoken';
 import { addDays, addHours } from 'date-fns';
 
 interface CreateUserInputData {
