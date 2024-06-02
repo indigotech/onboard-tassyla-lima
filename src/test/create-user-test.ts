@@ -5,17 +5,20 @@ import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
+import jwt from 'jsonwebtoken';
 
-interface InputData {
+interface CreateUserInputData {
   name: string;
   email: string;
   birthDate: string;
   password: string;
 }
 
-async function createUser(inputData: InputData): Promise<AxiosResponse> {
-  return axios.post(`${serverUrl}graphql`, {
-    query: `
+async function createUser(inputUser: CreateUserInputData, token: string): Promise<AxiosResponse> {
+  return axios.post(
+    `${serverUrl}graphql`,
+    {
+      query: `
       mutation CreateUser($data: CreateUserInput!) {
       createUser(data: $data) {
           id
@@ -25,74 +28,94 @@ async function createUser(inputData: InputData): Promise<AxiosResponse> {
         }
       }
       `,
-    variables: {
-      data: inputData,
+      variables: {
+        data: inputUser,
+      },
     },
-  });
+    {
+      headers: {
+        Authorization: token,
+      },
+    },
+  );
 }
 
-async function checksInputAndReturnedUser(inputData: InputData, response: AxiosResponse) {
+async function checksInputAndReturnedUser(inputUser: CreateUserInputData, response: AxiosResponse) {
   const { id, ...createUser } = response.data.data.createUser;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password, ...inputDataWithoutPassword } = inputData;
+  const { password, ...inputUserWithoutPassword } = inputUser;
 
-  expect(createUser).to.deep.equal(inputDataWithoutPassword);
+  expect(createUser).to.deep.equal(inputUserWithoutPassword);
   expect(Number(id)).to.be.above(0);
 }
 
-async function checksInputAndStoredUser(inputData: InputData) {
+async function checksInputAndStoredUser(inputUser: CreateUserInputData) {
   const userRepository = AppDataSource.getRepository(User);
 
   const storedUser = await userRepository.findOneBy({
-    email: inputData.email,
+    email: inputUser.email,
   });
 
   const { id, password, ...userFields } = storedUser;
 
-  const inputDataWithoutPassword = {
-    name: inputData.name,
-    email: inputData.email,
-    birthDate: inputData.birthDate,
+  const inputUserWithoutPassword = {
+    name: inputUser.name,
+    email: inputUser.email,
+    birthDate: inputUser.birthDate,
   };
 
-  expect(userFields).to.deep.equal(inputDataWithoutPassword);
+  expect(userFields).to.deep.equal(inputUserWithoutPassword);
   expect(Number(id)).to.be.above(0);
-  expect(await bcrypt.compare(inputData.password, password)).to.be.true;
+  expect(await bcrypt.compare(inputUser.password, password)).to.be.true;
 
   return id;
 }
 
 describe('createUser mutation', () => {
   let userRepository: Repository<User>;
+  let token: string;
 
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
+    const setupUser: CreateUserInputData = {
+      name: 'Setup User',
+      email: 'setup@example.com',
+      password: 'password123',
+      birthDate: '2000-01-11',
+    };
+
+    const user = await userRepository.save({
+      ...setupUser,
+      password: await bcrypt.hash(setupUser.password, 10),
+    });
+
+    token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET, { expiresIn: '5m' });
   });
 
   it('should create a new user', async () => {
-    const inputData: InputData = {
+    const inputUser: CreateUserInputData = {
       name: 'John Phill',
       email: 'john@example.com',
       password: 'password123',
       birthDate: '1990-01-01',
     };
 
-    const response = await createUser(inputData);
-    await checksInputAndReturnedUser(inputData, response);
-    const storedId = await checksInputAndStoredUser(inputData);
+    const response = await createUser(inputUser, token);
+    await checksInputAndReturnedUser(inputUser, response);
+    const storedId = await checksInputAndStoredUser(inputUser);
     expect(response.data.data.createUser.id).to.equal(String(storedId));
   });
 
   it('should return an error when creating a user with the same email', async () => {
-    const inputData1: InputData = {
+    const inputUser1: CreateUserInputData = {
       name: 'John Phill',
       email: 'john@example.com',
       password: 'password123',
       birthDate: '1990-01-01',
     };
 
-    const inputData2: InputData = {
+    const inputUser2: CreateUserInputData = {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password456',
@@ -106,17 +129,17 @@ describe('createUser mutation', () => {
     };
 
     await userRepository.save({
-      ...inputData1,
-      password: await bcrypt.hash(inputData1.password, 1),
+      ...inputUser1,
+      password: await bcrypt.hash(inputUser1.password, 1),
     });
 
-    const response = await createUser(inputData2);
+    const response = await createUser(inputUser2, token);
 
     expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should return an error when password is less than 6 characters long', async () => {
-    const inputData = {
+    const inputUser = {
       name: 'Matheus Felix',
       email: 'matheus@example.com',
       password: 'p4ss',
@@ -129,13 +152,13 @@ describe('createUser mutation', () => {
       additionalInfo: 'Password must be at least 6 characters long.',
     };
 
-    const response = await createUser(inputData);
+    const response = await createUser(inputUser, token);
 
     expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should return an error when password does not contain at least one letter', async () => {
-    const inputData = {
+    const inputUser = {
       name: 'Daniel Ueno',
       email: 'daniel@example.com',
       password: '123456',
@@ -148,12 +171,12 @@ describe('createUser mutation', () => {
       additionalInfo: 'Password must contain at least one letter.',
     };
 
-    const response = await createUser(inputData);
+    const response = await createUser(inputUser, token);
     expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
   it('should return an error when password does not contain at least one number', async () => {
-    const inputData = {
+    const inputUser = {
       name: 'Alan Raso',
       email: 'alan@example.com',
       password: 'password',
@@ -166,33 +189,27 @@ describe('createUser mutation', () => {
       additionalInfo: 'Password must contain at least one number.',
     };
 
-    const response = await createUser(inputData);
+    const response = await createUser(inputUser, token);
 
     expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 
-  it('should create another new user', async () => {
-    const inputData1: InputData = {
+  it('should return an error when token is invalid', async () => {
+    const inputUser: CreateUserInputData = {
       name: 'John Phill',
       email: 'john@example.com',
       password: 'password123',
       birthDate: '1990-01-01',
     };
 
-    const inputData2 = {
-      name: 'Tassyla Lima',
-      email: 'Tassyla@example.com',
-      password: 'password987',
-      birthDate: '2003-12-11',
+    const expectedError = {
+      code: 401,
+      message: 'Unauthorized access',
+      additionalInfo: 'The token is not valid.',
     };
 
-    await userRepository.save({
-      ...inputData1,
-      password: await bcrypt.hash(inputData1.password, 1),
-    });
-
-    const response = await createUser(inputData2);
-    await checksInputAndReturnedUser(inputData2, response);
-    await checksInputAndStoredUser(inputData2);
+    token = '';
+    const response = await createUser(inputUser, token);
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 });
