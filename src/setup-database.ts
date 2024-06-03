@@ -1,6 +1,10 @@
 import { AppDataSource } from './data-source.js';
+import { config } from 'dotenv';
 
 export async function setupDatabase() {
+  config({
+    path: process.env.NODE_ENV === 'test' ? 'test.env' : '.env',
+  });
   await AppDataSource.setOptions({
     host: process.env.DB_HOST,
     port: Number(`${process.env.DB_PORT}`),
