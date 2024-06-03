@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { expect } from 'chai';
 import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
@@ -79,11 +79,8 @@ describe('login mutation', () => {
     const response = await postLogin(inpuLogin);
 
     const { id, ...login } = response.data.data.login.user;
-    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as {
-      id: number;
-      iat: number;
-      exp: number;
-    };
+    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as JwtPayload;
+
     const expectedExpiration = addHours(new Date(), 8).getTime();
     const tokenExpiration = decodedToken.exp * 1000;
 
@@ -171,11 +168,7 @@ describe('login mutation', () => {
 
     const response = await postLogin(inputLogin);
 
-    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as {
-      id: number;
-      iat: number;
-      exp: number;
-    };
+    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as JwtPayload;
 
     const expectedExpiration = addDays(new Date(), 7).getTime();
     const tokenExpiration = decodedToken.exp * 1000;
@@ -204,11 +197,7 @@ describe('login mutation', () => {
 
     const response = await postLogin(inputLogin);
 
-    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as {
-      id: number;
-      iat: number;
-      exp: number;
-    };
+    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as JwtPayload;
 
     const expectedExpiration = addHours(new Date(), 8).getTime();
     const tokenExpiration = decodedToken.exp * 1000;
