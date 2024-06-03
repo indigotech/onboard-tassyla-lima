@@ -96,7 +96,7 @@ const validateLogin = async (email: string, password: string): Promise<OutUser> 
 };
 
 const authorizeAccess = (context) => {
-  if (context.userId === undefined) {
+  if (!context.userId) {
     throw new CustomError(401, 'Unauthorized access', 'The token is not valid.');
   }
 };
