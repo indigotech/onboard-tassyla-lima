@@ -52,7 +52,7 @@ describe('login mutation', () => {
     await userRepository.clear();
   });
 
-  it('should be able to login', async () => {
+  it('should be able to login with correct expiration for no rememberMe option set', async () => {
     const inputUser: CreateUserInputData = {
       name: 'John Phill',
       email: 'john@example.com',
@@ -84,6 +84,10 @@ describe('login mutation', () => {
       iat: number;
       exp: number;
     };
+    const expectedExpiration = addHours(new Date(), 8).getTime();
+    const tokenExpiration = decodedToken.exp * 1000;
+
+    expect(tokenExpiration).to.be.closeTo(expectedExpiration, 1000);
 
     expect(login).to.deep.equal(inputUserWithoutPassword);
     expect(Number(id)).to.deep.equal(decodedToken.id);
@@ -191,37 +195,6 @@ describe('login mutation', () => {
       email: inputUser.email,
       password: inputUser.password,
       rememberMe: false,
-    };
-
-    await userRepository.save({
-      ...inputUser,
-      password: await bcrypt.hash(inputUser.password, 10),
-    });
-
-    const response = await postLogin(inputLogin);
-
-    const decodedToken = jwt.verify(response.data.data.login.token, process.env.TOKEN_SECRET) as {
-      id: number;
-      iat: number;
-      exp: number;
-    };
-
-    const expectedExpiration = addHours(new Date(), 8).getTime();
-    const tokenExpiration = decodedToken.exp * 1000;
-
-    expect(tokenExpiration).to.be.closeTo(expectedExpiration, 1000);
-  });
-  it('should return a token with correct expiration for no rememberMe option set', async () => {
-    const inputUser: CreateUserInputData = {
-      name: 'Tassyla Lima',
-      email: 'tassyla@example.com',
-      password: 'password123',
-      birthDate: '2003-12-11',
-    };
-
-    const inputLogin: LoginInputData = {
-      email: inputUser.email,
-      password: inputUser.password,
     };
 
     await userRepository.save({
