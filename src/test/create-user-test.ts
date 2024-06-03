@@ -78,19 +78,8 @@ describe('createUser mutation', () => {
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
-    const setupUser: CreateUserInputData = {
-      name: 'Setup User',
-      email: 'setup@example.com',
-      password: 'password123',
-      birthDate: '2000-01-11',
-    };
 
-    const user = await userRepository.save({
-      ...setupUser,
-      password: await bcrypt.hash(setupUser.password, 10),
-    });
-
-    token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET, { expiresIn: '5m' });
+    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: '300s' });
   });
 
   it('should create a new user', async () => {
