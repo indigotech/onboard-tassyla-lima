@@ -1,11 +1,11 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { errorFormatter } from './schema/customError.js';
+import { AppDataSource } from './data-source.js';
+import { User } from './entity/User.js';
 import typeDefs from './schema/typeDefs.js';
 import resolvers from './schema/resolvers.js';
 import jwt from 'jsonwebtoken';
-import { AppDataSource } from './data-source.js';
-import { User } from './entity/User.js';
 
 export let serverUrl: string;
 
