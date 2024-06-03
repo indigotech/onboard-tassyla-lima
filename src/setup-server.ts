@@ -19,23 +19,24 @@ export async function setupServer() {
   const { url } = await startStandaloneServer(server, {
     listen: { port: 4000 },
     context: async ({ req }) => {
-      const token = req.headers.authorization || '';
-      if (token) {
+      const token = req.headers.authorization;
+      try {
         const decodedToken = jwt.verify(token, process.env.TOKEN_SECRET) as {
           id: number;
           iat: number;
           exp: number;
         };
+        if (decodedToken) {
+          const userRepository = AppDataSource.getRepository(User);
+          const user = await userRepository.findOneBy({ id: decodedToken.id });
 
-        const userRepository = AppDataSource.getRepository(User);
-        const user = await userRepository.findOneBy({ id: decodedToken.id });
-
-        if (user && new Date().getTime() < decodedToken.exp * 1000) {
-          return { userId: decodedToken.id };
+          if (user && new Date().getTime() < decodedToken.exp * 1000) {
+            return { userId: decodedToken.id };
+          }
         }
+      } catch (error) {
+        return {};
       }
-
-      return {};
     },
   });
 
