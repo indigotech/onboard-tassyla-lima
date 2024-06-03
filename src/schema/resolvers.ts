@@ -9,7 +9,11 @@ const resolvers = {
     hello: () => 'Hello, World!',
     user: async (_, { id }, context) => {
       authorizeAccess(context);
-      return getUserById(id);
+      return await getUserById(id);
+    },
+    users: async (_, { maxUsers }, context) => {
+      authorizeAccess(context);
+      return await getAllUsers(maxUsers);
     },
   },
   Mutation: {
@@ -112,6 +116,14 @@ const getUserById = async (id: number) => {
     throw new CustomError(404, 'User not found', 'The user with the provided ID was not found.');
   }
   return user;
+};
+
+const getAllUsers = async (maxUsers: number) => {
+  const userRepository = AppDataSource.getRepository(User);
+  if (!maxUsers) {
+    maxUsers = 10;
+  }
+  return await userRepository.find({ take: maxUsers, order: { name: 'ASC' } });
 };
 
 export const tokenCreation = (id: number, rememberMe?: boolean): string => {
