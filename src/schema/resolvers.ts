@@ -7,6 +7,11 @@ import jwt from 'jsonwebtoken';
 const resolvers = {
   Query: {
     hello: () => 'Hello, World!',
+    user: async (_, { id }, context) => {
+      authorizeAccess(context);
+      const user = await getUserById(id);
+      return user;
+    },
   },
   Mutation: {
     createUser: async (_, { data }, context): Promise<OutUser> => {
@@ -99,6 +104,17 @@ const authorizeAccess = (context) => {
   if (!context.userId) {
     throw new CustomError(401, 'Unauthorized access', 'The token is not valid.');
   }
+};
+
+const getUserById = async (id: number) => {
+  const userRepository = AppDataSource.getRepository(User);
+  const user = await userRepository.findOneBy({
+    id: id,
+  });
+  if (!user) {
+    throw new CustomError(404, 'User not found', 'The user with the provided ID was not found.');
+  }
+  return user;
 };
 
 export default resolvers;
