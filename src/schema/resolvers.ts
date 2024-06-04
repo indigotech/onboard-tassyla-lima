@@ -9,7 +9,9 @@ const resolvers = {
     hello: () => 'Hello, World!',
   },
   Mutation: {
-    createUser: async (_, { data }): Promise<OutUser> => {
+    createUser: async (_, { data }, context): Promise<OutUser> => {
+      authorizeAccess(context);
+
       await validateEmail(data.email);
       validatePassword(data.password);
 
@@ -91,6 +93,12 @@ const validateLogin = async (email: string, password: string): Promise<OutUser> 
     throw new CustomError(400, 'Invalid password', 'The password is incorrect.');
   }
   return user;
+};
+
+const authorizeAccess = (context) => {
+  if (!context.userId) {
+    throw new CustomError(401, 'Unauthorized access', 'The token is not valid.');
+  }
 };
 
 export default resolvers;
