@@ -9,20 +9,26 @@ import { Repository } from 'typeorm';
 import { postQuery } from './create-user-test';
 import { tokenCreation } from '../schema/resolvers.js';
 
-async function postUsersQuery(token?: string, maxUsers?: number): Promise<AxiosResponse> {
+async function postUsersQuery(token?: string, maxUsers?: number, skip?: number): Promise<AxiosResponse> {
   const query = `
-  query Users($data: Int) {
-    users (maxUsers: $data){
-      id
-      email
-      birthDate
-      name
+    query Users($maxUsers: Int, $skip: Int) {
+      users(maxUsers: $maxUsers, skip: $skip) {
+        hasNextPage
+        hasPreviousPage
+        totalUsers
+        users {
+          id
+          name
+          email
+          birthDate
+        }
+      }
     }
-  }
-  `;
+    `;
 
   const variables = {
-    data: maxUsers,
+    maxUsers: maxUsers,
+    skip: skip,
   };
 
   return postQuery(query, variables, token);
@@ -32,15 +38,17 @@ describe('users query', () => {
   let userRepository: Repository<User>;
   let token: string;
   let users;
+  let quantityOfUsersToSave;
 
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
     users = [];
+    quantityOfUsersToSave = 50;
 
     const createdUsers = await userRepository.save(
       await Promise.all(
-        [...Array(15)].map(async () => ({
+        [...Array(quantityOfUsersToSave)].map(async () => ({
           name: faker.name.findName(),
           email: faker.internet.email(),
           password: await bcrypt.hash(faker.internet.password(), 1),
@@ -65,16 +73,43 @@ describe('users query', () => {
     const defaultMaxUsers = 10;
     const response = await postUsersQuery(token);
 
-    expect(response.data.data.users).to.deep.equal(users.slice(0, defaultMaxUsers));
-  });
+    const expectedResponse = {
+      hasNextPage: true,
+      hasPreviousPage: false,
+      totalUsers: quantityOfUsersToSave,
+      users: users.slice(0, defaultMaxUsers),
+    };
 
+    expect(response.data.data.users).to.deep.equal(expectedResponse);
+  });
   it('should get the maximum amount of users defined in maxUsers', async () => {
     const maxUsers = 30;
     const response = await postUsersQuery(token, maxUsers);
 
-    expect(response.data.data.users).to.deep.equal(users.slice(0, maxUsers));
+    const expectedResponse = {
+      hasNextPage: true,
+      hasPreviousPage: false,
+      totalUsers: quantityOfUsersToSave,
+      users: users.slice(0, maxUsers),
+    };
+
+    expect(response.data.data.users).to.deep.equal(expectedResponse);
   });
 
+  it('should get last page of users', async () => {
+    const maxUsers = 30;
+    const skip = 30;
+    const response = await postUsersQuery(token, maxUsers, skip);
+
+    const expectedResponse = {
+      hasNextPage: false,
+      hasPreviousPage: true,
+      totalUsers: quantityOfUsersToSave,
+      users: users.slice(skip, skip + maxUsers),
+    };
+
+    expect(response.data.data.users).to.deep.equal(expectedResponse);
+  });
   it('should not be able to get a user with no token given', async () => {
     const expectedError = {
       code: 401,
@@ -84,9 +119,8 @@ describe('users query', () => {
 
     const response = await postUsersQuery();
 
-    expect(response.data).to.deep.equal({ data: { users: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
-
   it('should not be able to get a user with expirated token', async () => {
     const expectedError = {
       code: 401,
@@ -98,6 +132,6 @@ describe('users query', () => {
 
     const response = await postUsersQuery(token);
 
-    expect(response.data).to.deep.equal({ data: { users: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 });
