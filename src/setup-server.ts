@@ -20,10 +20,8 @@ export async function setupServer() {
       const token = req.headers.authorization;
       try {
         const decodedToken = jwt.verify(token, process.env.TOKEN_SECRET) as JwtPayload;
-        if (decodedToken) {
-          if (new Date().getTime() < decodedToken.exp * 1000) {
-            return { userId: decodedToken.id };
-          }
+        if (decodedToken && new Date().getTime() < decodedToken.exp * 1000) {
+          return { userId: decodedToken.id };
         }
       } catch (error) {
         return {};
