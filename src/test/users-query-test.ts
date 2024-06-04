@@ -7,6 +7,7 @@ import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
+import { tokenExpiration } from '.';
 
 interface CreateUserInputData {
   name: string;
@@ -15,7 +16,7 @@ interface CreateUserInputData {
   password: string;
 }
 
-async function postUsersQuery(token: string, maxUsers?: number): Promise<AxiosResponse> {
+async function postUsersQuery(token?: string, maxUsers?: number): Promise<AxiosResponse> {
   return axios.post(
     `${serverUrl}graphql`,
     {
@@ -74,7 +75,7 @@ describe('users query', () => {
       });
     });
 
-    token = jwt.sign({ id: users[0].id }, process.env.TOKEN_SECRET, { expiresIn: '300s' });
+    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: tokenExpiration });
   });
 
   it('should get users with default maxUsers', async () => {
@@ -108,5 +109,29 @@ describe('users query', () => {
     });
 
     expect(response.data.data.users).to.deep.equal(users.slice(0, maxUsers));
+  });
+  it('should not be able to get a user with no token given', async () => {
+    const expectedError = {
+      code: 401,
+      message: 'Unauthorized access',
+      additionalInfo: 'The token is not valid.',
+    };
+
+    const response = await postUsersQuery();
+
+    expect(response.data).to.deep.equal({ data: { users: null }, errors: [expectedError] });
+  });
+  it('should not be able to get a user with expirated token', async () => {
+    const expectedError = {
+      code: 401,
+      message: 'Unauthorized access',
+      additionalInfo: 'The token is not valid.',
+    };
+
+    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: `-${tokenExpiration}` });
+
+    const response = await postUsersQuery(token);
+
+    expect(response.data).to.deep.equal({ data: { users: null }, errors: [expectedError] });
   });
 });
