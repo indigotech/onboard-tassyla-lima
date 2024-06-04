@@ -69,15 +69,14 @@ describe('user query', () => {
 
     const response = await postUserQuery(generatedId, token);
 
-    const expectedUser = {
+    expect(response.data.data.user).to.deep.equal({
       id: String(generatedId),
       name: setupUser.name,
       email: setupUser.email,
       birthDate: setupUser.birthDate,
-    };
-
-    expect(response.data.data.user).to.deep.equal(expectedUser);
+    });
   });
+
   it('should not be able to get a user with the wrong id', async () => {
     const expectedError = {
       code: 404,
@@ -89,6 +88,7 @@ describe('user query', () => {
 
     expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
+
   it('should not be able to get a user with no token given', async () => {
     const expectedError = {
       code: 401,
@@ -100,6 +100,7 @@ describe('user query', () => {
 
     expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
+
   it('should not be able to get a user with expirated token', async () => {
     const expectedError = {
       code: 401,
