@@ -45,13 +45,13 @@ async function postUsersQuery(token?: string, maxUsers?: number): Promise<AxiosR
 describe('users query', () => {
   let userRepository: Repository<User>;
   let token: string;
-  let usersToInsert: CreateUserInputData[];
+  let usersToSave: CreateUserInputData[];
   let users;
 
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
-    usersToInsert = [];
+    usersToSave = [];
     users = [];
 
     for (let i = 1; i <= 15; i++) {
@@ -61,10 +61,10 @@ describe('users query', () => {
         password: await bcrypt.hash(faker.internet.password(), 1),
         birthDate: faker.date.past().toISOString().slice(0, 10),
       };
-      usersToInsert.push(user);
+      usersToSave.push(user);
     }
 
-    const createdUsers = await Promise.all(usersToInsert.map((user) => userRepository.save(user)));
+    const createdUsers = await userRepository.save(usersToSave);
 
     createdUsers.forEach((user) => {
       users.push({
