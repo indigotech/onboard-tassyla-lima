@@ -18,6 +18,7 @@ const typeDefs = `
   input LoginInput {
     email: String!
     password: String!
+    rememberMe: Boolean
   }
 
   type User {
