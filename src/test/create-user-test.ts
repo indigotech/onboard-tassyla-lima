@@ -6,6 +6,7 @@ import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
+import { tokenExpiration } from './index';
 
 interface CreateUserInputData {
   name: string;
@@ -79,7 +80,7 @@ describe('createUser mutation', () => {
     userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
 
-    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: '300s' });
+    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: tokenExpiration });
   });
 
   it('should create a new user', async () => {

@@ -1,11 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import { expect } from 'chai';
 import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
+import { tokenExpiration } from './index';
 
 interface CreateUserInputData {
   name: string;
@@ -14,7 +15,7 @@ interface CreateUserInputData {
   password: string;
 }
 
-async function postUserQuery(id: number, token: string): Promise<AxiosResponse> {
+async function postUserQuery(id: number, token?: string): Promise<AxiosResponse> {
   return axios.post(
     `${serverUrl}graphql`,
     {
@@ -43,13 +44,16 @@ async function postUserQuery(id: number, token: string): Promise<AxiosResponse> 
 describe('user query', () => {
   let userRepository: Repository<User>;
   let token: string;
-  let generatedId: number;
-  let setupUser: CreateUserInputData;
 
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
-    setupUser = {
+
+    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: tokenExpiration });
+  });
+
+  it('should get a user by the id', async () => {
+    const setupUser: CreateUserInputData = {
       name: 'Setup User',
       email: 'setup@example.com',
       password: 'password123',
@@ -58,27 +62,21 @@ describe('user query', () => {
 
     const user = await userRepository.save({
       ...setupUser,
-      password: await bcrypt.hash(setupUser.password, 10),
+      password: await bcrypt.hash(setupUser.password, 1),
     });
 
-    generatedId = user.id;
+    const generatedId = user.id;
 
-    token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET, { expiresIn: '300s' });
-  });
-
-  it('should get a user by the id', async () => {
     const response = await postUserQuery(generatedId, token);
 
-    const { id, ...userFields } = response.data.data.user;
-
-    const inputUserWithoutPassword = {
+    const expectedUser = {
+      id: String(generatedId),
       name: setupUser.name,
       email: setupUser.email,
       birthDate: setupUser.birthDate,
     };
 
-    expect(userFields).to.deep.equal(inputUserWithoutPassword);
-    expect(Number(id)).to.equal(generatedId);
+    expect(response.data.data.user).to.deep.equal(expectedUser);
   });
   it('should not be able to get a user with the wrong id', async () => {
     const expectedError = {
@@ -87,8 +85,8 @@ describe('user query', () => {
       additionalInfo: 'The user with the provided ID was not found.',
     };
 
-    const response = await postUserQuery(generatedId + 1, token);
+    const response = await postUserQuery(1, token);
 
-    expect(response.data).to.deep.equal({ data: { user: null }, errors: [expectedError] });
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
 });

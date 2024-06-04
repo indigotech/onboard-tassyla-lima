@@ -9,8 +9,7 @@ const resolvers = {
     hello: () => 'Hello, World!',
     user: async (_, { id }, context) => {
       authorizeAccess(context);
-      const user = await getUserById(id);
-      return user;
+      return await getUserById(id);
     },
   },
   Mutation: {
