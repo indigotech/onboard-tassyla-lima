@@ -89,4 +89,28 @@ describe('user query', () => {
 
     expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
   });
+  it('should not be able to get a user with no token given', async () => {
+    const expectedError = {
+      code: 401,
+      message: 'Unauthorized access',
+      additionalInfo: 'The token is not valid.',
+    };
+
+    const response = await postUserQuery(1);
+
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
+  });
+  it('should not be able to get a user with expirated token', async () => {
+    const expectedError = {
+      code: 401,
+      message: 'Unauthorized access',
+      additionalInfo: 'The token is not valid.',
+    };
+
+    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: `-${tokenExpiration}` });
+
+    const response = await postUserQuery(1, token);
+
+    expect(response.data).to.deep.equal({ data: null, errors: [expectedError] });
+  });
 });
