@@ -10,15 +10,19 @@ async function seedDatabase() {
   try {
     await setupDatabase();
     const userRepository = AppDataSource.getRepository(User);
+    const usersToSave: User[] = [];
 
     for (let i = 0; i < NUM_USERS; i++) {
-      userRepository.save({
-        name: faker.name.findName(),
-        email: faker.internet.email(),
-        password: await bcrypt.hash(faker.internet.password(), 10),
-        birthDate: faker.date.past().toISOString().slice(0, 10),
-      });
+      const user: User = new User();
+      user.name = faker.name.findName();
+      user.email = faker.internet.email();
+      user.password = await bcrypt.hash(faker.internet.password(), 10);
+      user.birthDate = faker.date.past().toISOString().slice(0, 10);
+
+      usersToSave.push(user);
     }
+
+    await userRepository.save(usersToSave);
 
     console.log(`Database seeded successfully with ${NUM_USERS} users.`);
   } catch (error) {
