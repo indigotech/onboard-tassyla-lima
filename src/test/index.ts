@@ -2,8 +2,6 @@ import { config } from 'dotenv';
 import { setupServer } from '../setup-server';
 import { setupDatabase } from '../setup-database';
 
-export const tokenExpiration = '300s';
-
 config({
   path: process.env.NODE_ENV === 'test' ? 'test.env' : '.env',
 });

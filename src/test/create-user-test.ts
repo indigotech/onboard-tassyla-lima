@@ -1,12 +1,11 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import axios, { AxiosResponse } from 'axios';
 import { expect } from 'chai';
 import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
-import { tokenExpiration } from './index';
+import { tokenCreation } from '../schema/resolvers';
 
 interface CreateUserInputData {
   name: string;
@@ -80,7 +79,7 @@ describe('createUser mutation', () => {
     userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
 
-    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: tokenExpiration });
+    token = tokenCreation(1);
   });
 
   it('should create a new user', async () => {

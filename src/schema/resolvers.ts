@@ -33,9 +33,7 @@ const resolvers = {
     },
     login: async (_, { data }): Promise<LoginResponse> => {
       const user = await validateLogin(data.email, data.password);
-
-      const expiration = data.rememberMe ? '7d' : '8h';
-      const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET, { expiresIn: expiration });
+      const token = tokenCreation(user.id, data.rememberMe);
 
       return {
         user: user,
@@ -114,6 +112,10 @@ const getUserById = async (id: number) => {
     throw new CustomError(404, 'User not found', 'The user with the provided ID was not found.');
   }
   return user;
+};
+
+export const tokenCreation = (id: number, rememberMe?: boolean): string => {
+  return jwt.sign({ id: id }, process.env.TOKEN_SECRET, { expiresIn: rememberMe ? '7d' : '8h' });
 };
 
 export default resolvers;
