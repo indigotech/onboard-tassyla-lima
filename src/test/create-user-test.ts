@@ -7,7 +7,7 @@ import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
 import { tokenCreation } from '../schema/resolvers';
 
-interface CreateUserInputData {
+export interface CreateUserInputData {
   name: string;
   email: string;
   birthDate: string;

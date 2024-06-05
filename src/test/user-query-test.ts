@@ -7,13 +7,7 @@ import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
 import { tokenCreation } from '../schema/resolvers';
-
-interface CreateUserInputData {
-  name: string;
-  email: string;
-  birthDate: string;
-  password: string;
-}
+import { CreateUserInputData } from './create-user-test';
 
 async function postUserQuery(id: number, token?: string): Promise<AxiosResponse> {
   return axios.post(

@@ -7,13 +7,7 @@ import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
 import { addDays, addHours } from 'date-fns';
-
-interface CreateUserInputData {
-  name: string;
-  email: string;
-  birthDate: string;
-  password: string;
-}
+import { CreateUserInputData } from './create-user-test';
 
 interface LoginInputData {
   email: string;
