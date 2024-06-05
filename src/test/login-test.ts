@@ -1,13 +1,13 @@
-import axios, { AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import bcrypt from 'bcrypt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { expect } from 'chai';
-import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
 import { addDays, addHours } from 'date-fns';
 import { CreateUserInputData } from './create-user-test';
+import { postQuery } from './create-user-test';
 
 interface LoginInputData {
   email: string;
@@ -16,8 +16,7 @@ interface LoginInputData {
 }
 
 async function postLogin(loginInputData: LoginInputData): Promise<AxiosResponse> {
-  const response = await axios.post(`${serverUrl}graphql`, {
-    query: `
+  const query = `
     mutation Login($data: LoginInput!) {
       login(data: $data) {
         user {
@@ -29,13 +28,13 @@ async function postLogin(loginInputData: LoginInputData): Promise<AxiosResponse>
         token
       }
     }
-      `,
-    variables: {
-      data: loginInputData,
-    },
-  });
+    `;
 
-  return response;
+  const variables = {
+    data: loginInputData,
+  };
+
+  return postQuery(query, variables);
 }
 
 describe('login mutation', () => {

@@ -1,16 +1,13 @@
-import axios from 'axios';
 import { expect } from 'chai';
-import { serverUrl } from '../setup-server';
+import { postQuery } from './create-user-test';
 
 describe('Sample Test', () => {
   it('should run hello query', async () => {
-    const response = await axios.post(`${serverUrl}graphql`, {
-      query: `
+    const response = await postQuery(`
         query {
         hello
         }
-    `,
-    });
+    `);
 
     expect(response.data.data.hello).to.be.eq('Hello, World!');
   });

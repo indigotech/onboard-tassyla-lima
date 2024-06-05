@@ -1,38 +1,31 @@
-import axios, { AxiosResponse } from 'axios';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import faker from 'faker';
+import { AxiosResponse } from 'axios';
 import { expect } from 'chai';
-import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
 import { tokenExpiration } from '.';
+import { postQuery } from './create-user-test';
 
 async function postUsersQuery(token?: string, maxUsers?: number): Promise<AxiosResponse> {
-  return axios.post(
-    `${serverUrl}graphql`,
-    {
-      query: `
-      query Users($data: Int) {
-        users (maxUsers: $data){
-          id
-          email
-          birthDate
-          name
-        }
-      }
-      `,
-      variables: {
-        data: maxUsers,
-      },
-    },
-    {
-      headers: {
-        Authorization: token,
-      },
-    },
-  );
+  const query = `
+  query Users($data: Int) {
+    users (maxUsers: $data){
+      id
+      email
+      birthDate
+      name
+    }
+  }
+  `;
+
+  const variables = {
+    data: maxUsers,
+  };
+
+  return postQuery(query, variables, token);
 }
 
 describe('users query', () => {

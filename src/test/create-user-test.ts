@@ -14,23 +14,12 @@ export interface CreateUserInputData {
   password: string;
 }
 
-async function createUser(inputUser: CreateUserInputData, token: string): Promise<AxiosResponse> {
+export async function postQuery(query: string, variables?, token?: string): Promise<AxiosResponse> {
   return axios.post(
     `${serverUrl}graphql`,
     {
-      query: `
-      mutation CreateUser($data: CreateUserInput!) {
-      createUser(data: $data) {
-          id
-          name
-          email
-          birthDate
-        }
-      }
-      `,
-      variables: {
-        data: inputUser,
-      },
+      query: query,
+      variables: variables,
     },
     {
       headers: {
@@ -38,6 +27,25 @@ async function createUser(inputUser: CreateUserInputData, token: string): Promis
       },
     },
   );
+}
+
+async function createUser(inputUser: CreateUserInputData, token?: string): Promise<AxiosResponse> {
+  const query = `
+    mutation CreateUser($data: CreateUserInput!) {
+    createUser(data: $data) {
+        id
+        name
+        email
+        birthDate
+      }
+    }
+    `;
+
+  const variables = {
+    data: inputUser,
+  };
+
+  return postQuery(query, variables, token);
 }
 
 async function checksInputAndReturnedUser(inputUser: CreateUserInputData, response: AxiosResponse) {
