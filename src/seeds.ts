@@ -1,8 +1,13 @@
+import { config } from 'dotenv';
 import { AppDataSource } from './data-source.js';
 import { User } from './entity/User.js';
 import { setupDatabase } from './setup-database.js';
 import bcrypt from 'bcrypt';
 import faker from 'faker';
+
+config({
+  path: process.env.NODE_ENV === 'test' ? 'test.env' : '.env',
+});
 
 const NUM_USERS = 50;
 
