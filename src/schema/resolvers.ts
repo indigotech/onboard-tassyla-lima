@@ -11,9 +11,9 @@ const resolvers = {
       authorizeAccess(context);
       return await getUserById(id);
     },
-    users: async (_, { maxUsers }, context) => {
+    users: async (_, { maxUsers, skip }, context) => {
       authorizeAccess(context);
-      return await getAllUsers(maxUsers);
+      return await getAllUsers(maxUsers, skip);
     },
   },
   Mutation: {
@@ -118,12 +118,24 @@ const getUserById = async (id: number) => {
   return user;
 };
 
-const getAllUsers = async (maxUsers: number) => {
+const getAllUsers = async (maxUsers: number, skip: number) => {
   const userRepository = AppDataSource.getRepository(User);
-  if (!maxUsers) {
-    maxUsers = 10;
-  }
-  return await userRepository.find({ take: maxUsers, order: { name: 'ASC' } });
+
+  const [users, totalUsers] = await userRepository.findAndCount({
+    take: maxUsers ?? 10,
+    skip: skip ?? 0,
+    order: { name: 'ASC' },
+  });
+
+  const hasNextPage = skip + maxUsers < totalUsers;
+  const hasPreviousPage = skip > 0;
+
+  return {
+    users,
+    totalUsers,
+    hasNextPage,
+    hasPreviousPage,
+  };
 };
 
 export const tokenCreation = (id: number, rememberMe?: boolean): string => {

@@ -1,10 +1,10 @@
-const DEFAULT_PAGE_SIZE = 10;
+export const DEFAULT_PAGE_SIZE = 10;
 
 const typeDefs = `
   type Query {
     hello: String
     user(id: ID!): User!
-    users(maxUsers: Int = ${DEFAULT_PAGE_SIZE}): [User]
+    users(maxUsers: Int = ${DEFAULT_PAGE_SIZE}, skip: Int = 0): UsersPage!
   }
 
   type Mutation {
@@ -35,6 +35,13 @@ const typeDefs = `
   type LoginResponse {
     user: User!
     token: String!
+  }
+
+  type UsersPage {
+    users: [User]
+    totalUsers: Int
+    hasNextPage: Boolean
+    hasPreviousPage: Boolean
   }
 `;
 
