@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import { expect } from 'chai';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';

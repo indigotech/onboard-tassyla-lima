@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import axios, { AxiosResponse } from 'axios';
 import { expect } from 'chai';
 import { serverUrl } from '../setup-server';
