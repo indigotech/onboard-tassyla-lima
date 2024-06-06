@@ -44,7 +44,7 @@ describe('users query', () => {
     userRepository = AppDataSource.getRepository(User);
     await userRepository.clear();
     users = [];
-    quantityOfUsersToSave = 50;
+    quantityOfUsersToSave = 10;
 
     const createdUsers = await userRepository.save(
       await Promise.all(
@@ -74,7 +74,7 @@ describe('users query', () => {
     const response = await postUsersQuery(token);
 
     const expectedResponse = {
-      hasNextPage: true,
+      hasNextPage: false,
       hasPreviousPage: false,
       totalUsers: quantityOfUsersToSave,
       users: users.slice(0, defaultMaxUsers),
@@ -82,8 +82,8 @@ describe('users query', () => {
 
     expect(response.data.data.users).to.deep.equal(expectedResponse);
   });
-  it('should get the maximum amount of users defined in maxUsers', async () => {
-    const maxUsers = 30;
+  it('should get the first page of users', async () => {
+    const maxUsers = 3;
     const response = await postUsersQuery(token, maxUsers);
 
     const expectedResponse = {
@@ -96,9 +96,9 @@ describe('users query', () => {
     expect(response.data.data.users).to.deep.equal(expectedResponse);
   });
 
-  it('should get last page of users', async () => {
-    const maxUsers = 30;
-    const skip = 30;
+  it('should get the last page of users', async () => {
+    const maxUsers = 3;
+    const skip = 7;
     const response = await postUsersQuery(token, maxUsers, skip);
 
     const expectedResponse = {
@@ -110,6 +110,37 @@ describe('users query', () => {
 
     expect(response.data.data.users).to.deep.equal(expectedResponse);
   });
+
+  it('should get a middle page of users', async () => {
+    const maxUsers = 3;
+    const skip = 3;
+    const response = await postUsersQuery(token, maxUsers, skip);
+
+    const expectedResponse = {
+      hasNextPage: true,
+      hasPreviousPage: true,
+      totalUsers: quantityOfUsersToSave,
+      users: users.slice(skip, skip + maxUsers),
+    };
+
+    expect(response.data.data.users).to.deep.equal(expectedResponse);
+  });
+
+  it('should get an empty page of users when skip is bigger than the total quantity of users', async () => {
+    const maxUsers = 3;
+    const skip = 15;
+    const response = await postUsersQuery(token, maxUsers, skip);
+
+    const expectedResponse = {
+      hasNextPage: false,
+      hasPreviousPage: true,
+      totalUsers: quantityOfUsersToSave,
+      users: users.slice(skip, skip + maxUsers),
+    };
+
+    expect(response.data.data.users).to.deep.equal(expectedResponse);
+  });
+
   it('should not be able to get a user with no token given', async () => {
     const expectedError = {
       code: 401,
