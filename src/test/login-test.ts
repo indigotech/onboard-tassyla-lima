@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { expect } from 'chai';
 import { AppDataSource } from '../data-source.js';

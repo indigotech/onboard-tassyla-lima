@@ -1,7 +1,7 @@
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { CustomError } from './customError.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const resolvers = {
