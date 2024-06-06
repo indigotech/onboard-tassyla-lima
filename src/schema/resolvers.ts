@@ -122,8 +122,8 @@ const getAllUsers = async (maxUsers: number, skip: number) => {
   const userRepository = AppDataSource.getRepository(User);
 
   const [users, totalUsers] = await userRepository.findAndCount({
-    take: maxUsers,
-    skip: skip,
+    take: maxUsers ?? 10,
+    skip: skip ?? 0,
     order: { name: 'ASC' },
   });
 
