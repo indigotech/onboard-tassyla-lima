@@ -6,8 +6,8 @@ import { expect } from 'chai';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
-import { tokenExpiration } from '.';
 import { postQuery } from './create-user-test';
+import { tokenCreation } from '../schema/resolvers.js';
 
 async function postUsersQuery(token?: string, maxUsers?: number): Promise<AxiosResponse> {
   const query = `
@@ -58,7 +58,7 @@ describe('users query', () => {
 
     users.sort((a, b) => a.name.localeCompare(b.name));
 
-    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: tokenExpiration });
+    token = tokenCreation(1);
   });
 
   it('should get users with default maxUsers', async () => {
@@ -94,7 +94,7 @@ describe('users query', () => {
       additionalInfo: 'The token is not valid.',
     };
 
-    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: `-${tokenExpiration}` });
+    token = jwt.sign({ id: 1 }, process.env.TOKEN_SECRET, { expiresIn: `-300s` });
 
     const response = await postUsersQuery(token);
 
