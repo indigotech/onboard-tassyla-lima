@@ -17,6 +17,16 @@ async function postUserQuery(id: number, token?: string): Promise<AxiosResponse>
         name
         email
         birthDate
+        addresses {
+          id
+          city
+          cep
+          complement
+          neighborhood
+          state
+          street
+          streetNumber
+        }
       }
     }
     `;
@@ -61,6 +71,7 @@ describe('user query', () => {
       name: setupUser.name,
       email: setupUser.email,
       birthDate: setupUser.birthDate,
+      addresses: [],
     });
   });
 

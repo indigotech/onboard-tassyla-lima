@@ -21,6 +21,16 @@ async function postUsersQuery(token?: string, maxUsers?: number, skip?: number):
           name
           email
           birthDate
+          addresses {
+            id
+            city
+            cep
+            complement
+            neighborhood
+            state
+            street
+            streetNumber
+          }
         }
       }
     }
@@ -62,6 +72,7 @@ describe('users query', () => {
       name: user.name,
       email: user.email,
       birthDate: user.birthDate,
+      addresses: [],
     }));
 
     users.sort((a, b) => a.name.localeCompare(b.name));
