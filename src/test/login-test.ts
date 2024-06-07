@@ -42,7 +42,7 @@ describe('login mutation', () => {
 
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
-    await userRepository.clear();
+    await userRepository.delete({});
   });
 
   it('should be able to login with correct expiration for no rememberMe option set', async () => {

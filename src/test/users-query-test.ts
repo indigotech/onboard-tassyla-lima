@@ -42,7 +42,7 @@ describe('users query', () => {
 
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
-    await userRepository.clear();
+    await userRepository.delete({});
     users = [];
     quantityOfUsersToSave = 10;
 

@@ -68,8 +68,9 @@ async function checksInputAndStoredUser(inputUser: CreateUserInputData) {
 
   const inputUserWithoutPassword = {
     name: inputUser.name,
-    email: inputUser.email,
     birthDate: inputUser.birthDate,
+    email: inputUser.email,
+    addresses: [],
   };
 
   expect(userFields).to.deep.equal(inputUserWithoutPassword);
@@ -85,7 +86,7 @@ describe('createUser mutation', () => {
 
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
-    await userRepository.clear();
+    await userRepository.delete({});
 
     token = tokenCreation(1);
   });

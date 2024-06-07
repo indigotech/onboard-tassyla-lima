@@ -34,7 +34,7 @@ describe('user query', () => {
 
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
-    await userRepository.clear();
+    await userRepository.delete({});
 
     token = tokenCreation(1);
   });
