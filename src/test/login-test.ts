@@ -7,7 +7,7 @@ import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
 import { addDays, addHours } from 'date-fns';
 import { CreateUserInputData } from './create-user-test';
-import { postQuery } from './create-user-test';
+import { postQuery } from './postQuery.js';
 
 interface LoginInputData {
   email: string;
