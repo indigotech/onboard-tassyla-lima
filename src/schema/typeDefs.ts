@@ -25,11 +25,23 @@ const typeDefs = `
     rememberMe: Boolean
   }
 
+  type Address {
+    id: ID!
+    cep: String!
+    street: String!
+    streetNumber: String!
+    complement: String!
+    neighborhood: String!
+    city: String!
+    state: String!
+  }
+
   type User {
     id: ID!
     name: String!
     email: String!
     birthDate: String!
+    addresses: [Address]
   }
 
   type LoginResponse {
@@ -43,6 +55,7 @@ const typeDefs = `
     hasNextPage: Boolean
     hasPreviousPage: Boolean
   }
+
 `;
 
 export default typeDefs;

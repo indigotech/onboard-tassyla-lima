@@ -7,7 +7,7 @@ import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
 import { addDays, addHours } from 'date-fns';
 import { CreateUserInputData } from './create-user-test';
-import { postQuery } from './create-user-test';
+import { postQuery } from './postQuery.js';
 
 interface LoginInputData {
   email: string;
@@ -42,7 +42,7 @@ describe('login mutation', () => {
 
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
-    await userRepository.clear();
+    await userRepository.delete({});
   });
 
   it('should be able to login with correct expiration for no rememberMe option set', async () => {

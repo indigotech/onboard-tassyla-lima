@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { postQuery } from './create-user-test';
+import { postQuery } from './postQuery';
 
 describe('Sample Test', () => {
   it('should run hello query', async () => {

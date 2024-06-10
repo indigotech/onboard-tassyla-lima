@@ -6,8 +6,9 @@ import { expect } from 'chai';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
-import { postQuery } from './create-user-test';
+import { postQuery } from './postQuery.js';
 import { tokenCreation } from '../schema/resolvers.js';
+import { Address } from '../entity/Address.js';
 
 async function postUsersQuery(token?: string, maxUsers?: number, skip?: number): Promise<AxiosResponse> {
   const query = `
@@ -21,6 +22,16 @@ async function postUsersQuery(token?: string, maxUsers?: number, skip?: number):
           name
           email
           birthDate
+          addresses {
+            id
+            city
+            cep
+            complement
+            neighborhood
+            state
+            street
+            streetNumber
+          }
         }
       }
     }
@@ -36,23 +47,36 @@ async function postUsersQuery(token?: string, maxUsers?: number, skip?: number):
 
 describe('users query', () => {
   let userRepository: Repository<User>;
+  let addressRepository: Repository<Address>;
   let token: string;
   let users;
   let quantityOfUsersToSave;
 
   beforeEach(async () => {
     userRepository = AppDataSource.getRepository(User);
-    await userRepository.clear();
+    addressRepository = AppDataSource.getRepository(Address);
+    await addressRepository.delete({});
+    await userRepository.delete({});
     users = [];
     quantityOfUsersToSave = 10;
+    const maxAddressesByUser = 3;
 
-    const createdUsers = await userRepository.save(
+    const createdUsers: User[] = await userRepository.save(
       await Promise.all(
         [...Array(quantityOfUsersToSave)].map(async () => ({
           name: faker.name.findName(),
           email: faker.internet.email(),
           password: await bcrypt.hash(faker.internet.password(), 1),
           birthDate: faker.date.past().toISOString().slice(0, 10),
+          addresses: [...Array(faker.datatype.number({ min: 0, max: maxAddressesByUser }))].map(() => ({
+            city: faker.address.city(),
+            cep: faker.address.zipCode(),
+            complement: faker.address.secondaryAddress(),
+            neighborhood: faker.address.streetName(),
+            state: faker.address.stateAbbr(),
+            street: faker.address.streetName(),
+            streetNumber: String(faker.datatype.number({ min: 1, max: 1000 })),
+          })),
         })),
       ),
     );
@@ -62,6 +86,7 @@ describe('users query', () => {
       name: user.name,
       email: user.email,
       birthDate: user.birthDate,
+      addresses: user.addresses.map((address) => ({ ...address, id: String(address.id) })),
     }));
 
     users.sort((a, b) => a.name.localeCompare(b.name));
@@ -80,8 +105,14 @@ describe('users query', () => {
       users: users.slice(0, defaultMaxUsers),
     };
 
-    expect(response.data.data.users).to.deep.equal(expectedResponse);
+    const sortedUsersByAddresses = response.data.data.users.users.map((user) => ({
+      ...user,
+      addresses: user.addresses.sort((a, b) => a.id.localeCompare(b.id)),
+    }));
+
+    expect({ ...response.data.data.users, users: sortedUsersByAddresses }).to.deep.equal(expectedResponse);
   });
+
   it('should get the first page of users', async () => {
     const maxUsers = 3;
     const response = await postUsersQuery(token, maxUsers);
@@ -93,7 +124,12 @@ describe('users query', () => {
       users: users.slice(0, maxUsers),
     };
 
-    expect(response.data.data.users).to.deep.equal(expectedResponse);
+    const sortedUsersByAddresses = response.data.data.users.users.map((user) => ({
+      ...user,
+      addresses: user.addresses.sort((a, b) => a.id.localeCompare(b.id)),
+    }));
+
+    expect({ ...response.data.data.users, users: sortedUsersByAddresses }).to.deep.equal(expectedResponse);
   });
 
   it('should get the last page of users', async () => {
@@ -108,7 +144,12 @@ describe('users query', () => {
       users: users.slice(skip, skip + maxUsers),
     };
 
-    expect(response.data.data.users).to.deep.equal(expectedResponse);
+    const sortedUsersByAddresses = response.data.data.users.users.map((user) => ({
+      ...user,
+      addresses: user.addresses.sort((a, b) => a.id.localeCompare(b.id)),
+    }));
+
+    expect({ ...response.data.data.users, users: sortedUsersByAddresses }).to.deep.equal(expectedResponse);
   });
 
   it('should get a middle page of users', async () => {
@@ -123,7 +164,12 @@ describe('users query', () => {
       users: users.slice(skip, skip + maxUsers),
     };
 
-    expect(response.data.data.users).to.deep.equal(expectedResponse);
+    const sortedUsersByAddresses = response.data.data.users.users.map((user) => ({
+      ...user,
+      addresses: user.addresses.sort((a, b) => a.id.localeCompare(b.id)),
+    }));
+
+    expect({ ...response.data.data.users, users: sortedUsersByAddresses }).to.deep.equal(expectedResponse);
   });
 
   it('should get an empty page of users when skip is bigger than the total quantity of users', async () => {

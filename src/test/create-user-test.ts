@@ -1,32 +1,18 @@
 import bcrypt from 'bcrypt';
-import axios, { AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import { expect } from 'chai';
-import { serverUrl } from '../setup-server';
 import { AppDataSource } from '../data-source.js';
 import { User } from '../entity/User.js';
 import { Repository } from 'typeorm';
 import { tokenCreation } from '../schema/resolvers';
+import { Address } from '../entity/Address';
+import { postQuery } from './postQuery.js';
 
 export interface CreateUserInputData {
   name: string;
   email: string;
   birthDate: string;
   password: string;
-}
-
-export async function postQuery(query: string, variables?, token?: string): Promise<AxiosResponse> {
-  return axios.post(
-    `${serverUrl}graphql`,
-    {
-      query: query,
-      variables: variables,
-    },
-    {
-      headers: {
-        Authorization: token,
-      },
-    },
-  );
 }
 
 async function createUser(inputUser: CreateUserInputData, token?: string): Promise<AxiosResponse> {
@@ -68,8 +54,9 @@ async function checksInputAndStoredUser(inputUser: CreateUserInputData) {
 
   const inputUserWithoutPassword = {
     name: inputUser.name,
-    email: inputUser.email,
     birthDate: inputUser.birthDate,
+    email: inputUser.email,
+    addresses: [],
   };
 
   expect(userFields).to.deep.equal(inputUserWithoutPassword);
@@ -81,11 +68,14 @@ async function checksInputAndStoredUser(inputUser: CreateUserInputData) {
 
 describe('createUser mutation', () => {
   let userRepository: Repository<User>;
+  let addressRepository: Repository<Address>;
   let token: string;
 
   beforeEach(async () => {
+    addressRepository = AppDataSource.getRepository(Address);
     userRepository = AppDataSource.getRepository(User);
-    await userRepository.clear();
+    await addressRepository.delete({});
+    await userRepository.delete({});
 
     token = tokenCreation(1);
   });
